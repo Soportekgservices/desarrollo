@@ -7,8 +7,7 @@ function adminMenuHtml(active) {
     <li class="${m('tests')}" onclick="viewTests()"><i class="fa-solid fa-vial-circle-check"></i> Gestión de Pruebas</li>
     <li class="${m('areas')}" onclick="viewAreasVocacionales()"><i class="fa-solid fa-briefcase"></i> Áreas Vocacionales</li>
     <li class="${m('users')}" onclick="viewUserManagement()"><i class="fa-solid fa-users-gear"></i> Gestión de Usuarios</li>
-    <li class="${m('solic')}" onclick="viewSolicitudesAplicacion()"><i class="fa-solid fa-clipboard-check"></i> Solicitudes de evaluación <span id="navBadgeAdminSolic"></span></li>
-    <li class="${m('reports')}" onclick="viewAdminReports()"><i class="fa-solid fa-file-invoice-chart"></i> Reportes Globales</li>`;
+    <li class="${m('solic')}" onclick="viewSolicitudesAplicacion()"><i class="fa-solid fa-clipboard-check"></i> Solicitudes de evaluación <span id="navBadgeAdminSolic"></span></li>`;
 }
 
 function viewAdmin() {
@@ -46,25 +45,6 @@ async function loadAdminStats() {
         document.getElementById('countCol').innerText = (c || 0).toString().padStart(2, '0');
         document.getElementById('countTestReal').innerText = (r || 0).toString().padStart(2, '0');
     } catch (e) { console.error("Error en stats:", e); }
-}
-
-async function viewAdminReports() {
-    document.getElementById('roleMenu').innerHTML = adminMenuHtml('reports');
-    document.getElementById('pageTitle').innerText = "Reportes Globales";
-    document.getElementById('pageDesc').innerText = "Visualización de resultados de todas las instituciones.";
-    
-    const { data: cols } = await _s.from('tcolegios').select('id, nombre').order('nombre');
-    
-    document.getElementById('dynamicBoard').innerHTML = `
-        <div class="card span-6">
-            <h3>Seleccionar Institución</h3>
-            <p style="color:var(--secondary); margin-bottom:20px;">Elige un colegio para ver sus estadísticas individuales y grupales.</p>
-            <select id="adminColegioSelector" class="pill-btn" style="width:100%; height:auto; padding:12px; font-size:1rem;" onchange="viewSchoolReportsPanel(this.value, this.options[this.selectedIndex].text)">
-                <option value="">-- Seleccionar Colegio --</option>
-                ${(cols || []).map(c => `<option value="${c.id}">${esc(c.nombre)}</option>`).join('')}
-            </select>
-        </div>`;
-    refreshNotifBadges();
 }
 
 async function loadDistributorsTable() {
@@ -131,13 +111,6 @@ async function adminSaveDist(id) {
     if(!nombre || !identificacion || !tipodoc) return alert("Completa todos los campos.");
 
     const isEdit = (id !== "null" && id !== null);
-
-    // Validación compuesta previa: ID + Tipo
-    let checkQuery = _s.from('tusuario').select('id').eq('identificacion', identificacion).eq('tipodoc', tipodoc);
-    if(isEdit) checkQuery = checkQuery.neq('id', id);
-    const { data: exists } = await checkQuery.maybeSingle();
-    if(exists) return alert(`Error: Ya existe un distribuidor registrado con el tipo ${tipodoc} e identificación ${identificacion}.`);
-
     let error;
 
     if(isEdit) {
@@ -317,17 +290,20 @@ async function viewTests() {
     
     let html = `
         <table class="data-table">
-            <thead><tr><th>ID</th><th>Nombre</th><th>Preguntas</th><th>Acciones</th></tr></thead>
+            <thead><tr><th>ID</th><th>Nombre</th><th>Tipo Respuesta</th><th>Lógica Cálculo</th><th>Preguntas</th><th>Acciones</th></tr></thead>
             <tbody>
                 ${data.map(t => `
                     <tr>
                         <td>#${t.id}</td>
                         <td><strong>${t.nombre}</strong></td>
+                        <td>${t.tipo_respuesta === 'likert_1_5' ? 'Likert (1-5)' : 'Sí/No'}</td>
+                        <td>${t.logica_calculo === 'promedio_por_area' ? 'Promedio' : 'Conteo'}</td>
+                        <td><span class="badge" style="background:var(--accent); color:white;">${t.tipo_informe || 'generico'}</span></td>
                         <td>${t.cantpreguntas || 0}</td>
                         <td style="display:flex; gap:8px;">
                             <button title="Configurar" class="btn-main" style="padding:8px; width:40px; background:var(--primary);" onclick="manageQuestions(${t.id}, '${t.nombre}')"><i class="fa-solid fa-gear"></i></button>
                             <button title="Subir CSV" class="btn-main" style="padding:8px; width:40px; background:var(--accent);" onclick="renderBulkUpload(${t.id}, '${t.nombre}')"><i class="fa-solid fa-upload"></i></button>
-                            <button title="Editar" class="btn-main" style="padding:8px; width:40px; background:var(--secondary);" onclick="renderTestForm(${t.id}, '${t.nombre}')"><i class="fa-solid fa-pen"></i></button>
+                            <button title="Editar" class="btn-main" style="padding:8px; width:40px; background:var(--secondary);" onclick="renderTestForm(${t.id}, '${t.nombre}', '${t.tipo_respuesta}', '${t.logica_calculo}', '${t.tipo_informe}')"><i class="fa-solid fa-pen"></i></button>
                             <button title="Eliminar" class="btn-main" style="padding:8px; width:40px; background:var(--danger);" onclick="deleteTest(${t.id})"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>`).join('')}
@@ -337,8 +313,8 @@ async function viewTests() {
     refreshNotifBadges();
 }
 
-function renderTestForm(id = null, nombre = "") {
-    const isEdit = (id !== null);
+function renderTestForm(id = null, nombre = "", tipoRespuesta = "likert_1_5", logicaCalculo = "promedio_por_area", tipoInforme = "chaside_vocacional") {
+    const isEdit = (id !== null && id !== 'null');
     document.getElementById('dynamicBoard').innerHTML = `
         <div class="card span-6">
             <h3>${isEdit ? 'Editar Prueba' : 'Nueva Prueba'}</h3>
@@ -346,19 +322,55 @@ function renderTestForm(id = null, nombre = "") {
                 <label>Nombre de la Prueba</label>
                 <input type="text" id="testName" value="${nombre}">
             </div>
-            <div style="display:flex; gap:15px;">
-                <button class="btn-main" onclick="saveTest(${id})">${isEdit ? 'Actualizar' : 'Guardar'}</button>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:10px;">
+                <div class="input-box">
+                    <label>Tipo de Respuesta</label>
+                    <select id="testType">
+                        <option value="likert_1_5" ${tipoRespuesta === 'likert_1_5' ? 'selected' : ''}>Escala Likert (1-5)</option>
+                        <option value="si_no" ${tipoRespuesta === 'si_no' ? 'selected' : ''}>Sí / No</option>
+                    </select>
+                </div>
+                <div class="input-box">
+                    <label>Plantilla de Informe</label>
+                    <select id="tipoInforme">
+                        <option value="chaside_vocacional" ${tipoInforme === 'chaside_vocacional' ? 'selected' : ''}>CHASIDE Vocacional</option>
+                        <option value="inteligencia_emocional" ${tipoInforme === 'inteligencia_emocional' ? 'selected' : ''}>Inteligencia Emocional</option>
+                        <option value="generico" ${tipoInforme === 'generico' ? 'selected' : ''}>Informe Genérico</option>
+                    </select>
+                </div>
+                <div class="input-box">
+                    <label>Lógica de Cálculo</label>
+                    <select id="testLogic">
+                        <option value="promedio_por_area" ${logicaCalculo === 'promedio_por_area' ? 'selected' : ''}>Promedio por Área</option>
+                        <option value="conteo" ${logicaCalculo === 'conteo' ? 'selected' : ''}>Conteo Proporcional (Sí=100%)</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display:flex; gap:15px; margin-top:20px;">
+                <button class="btn-main" onclick="saveTest(${id})">${isEdit ? 'Actualizar' : 'Crear'} Prueba</button>
                 <button class="btn-main" style="background:var(--secondary);" onclick="viewTests()">Cancelar</button>
             </div>
         </div>`;
 }
 
 async function saveTest(id) {
-    const nombre = document.getElementById('testName').value;
-    if(!nombre) return alert("El nombre es necesario.");
+    const nombre = document.getElementById('testName').value.trim();
+    const tipo_respuesta = document.getElementById('testType').value;
+    const logica_calculo = document.getElementById('testLogic').value;
+    const tipo_informe = document.getElementById('tipoInforme').value;
+    if(!nombre || !tipo_respuesta || !logica_calculo || !tipo_informe) {
+        return alert("Todos los campos son obligatorios.");
+    }
+
+    const payload = { nombre, tipo_respuesta, logica_calculo, tipo_informe };
+
     let error;
-    if(id) ({ error } = await _s.from('tpruebas').update({ nombre }).eq('id', id));
-    else ({ error } = await _s.from('tpruebas').insert([{ nombre, estado: 'Activo' }]));
+    if(id && id !== 'null') {
+        ({ error } = await _s.from('tpruebas').update(payload).eq('id', id));
+    } else {
+        ({ error } = await _s.from('tpruebas').insert([{ ...payload, estado: 'Activo' }]));
+    }
+
     if(error) alert("Error: " + error.message);
     else viewTests();
 }
@@ -594,13 +606,6 @@ async function saveSchool() {
 
     if (rNom && rIdNum) {
         let finalRectorId = rectorId;
-
-        // Validación compuesta previa para Rector
-        let checkQuery = _s.from('tusuario').select('id').eq('identificacion', rIdNum).eq('tipodoc', rTipoDoc);
-        if(rectorId) checkQuery = checkQuery.neq('id', rectorId);
-        const { data: exists } = await checkQuery.maybeSingle();
-        if(exists) return alert(`Error: Ya existe un usuario registrado con el tipo ${rTipoDoc} e identificación ${rIdNum}.`);
-
         if (rectorId) {
             const { error: errUpd } = await _s.from('tusuario').update({ nombre: rNom, identificacion: rIdNum, tipodoc: rTipoDoc }).eq('id', rectorId);
             if (errUpd && errUpd.code === '23505') return alert("Error: La identificación del rector ya está en uso por otro usuario.");
@@ -692,12 +697,6 @@ async function saveRectorForSchool() {
     const identificacion = document.getElementById('rectorIdNumber').value.trim();
 
     if (!nombre || !identificacion || !tipodoc) return alert('Completa todos los campos.');
-
-    // Validación compuesta previa
-    let checkQuery = _s.from('tusuario').select('id').eq('identificacion', identificacion).eq('tipodoc', tipodoc);
-    if(rectorId) checkQuery = checkQuery.neq('id', rectorId);
-    const { data: exists } = await checkQuery.maybeSingle();
-    if(exists) return alert(`Error: Ya existe un usuario registrado con el tipo ${tipodoc} e identificación ${identificacion}.`);
 
     let userId = rectorId;
     if (rectorId) {
@@ -1198,11 +1197,6 @@ function showAddStudentForm() {
 async function saveNewStudent() {
     const tipodoc = document.getElementById('newEstTipoDoc').value; const iden = document.getElementById('newEstId').value.trim(); const nom = document.getElementById('newEstNombre').value.trim();
     if(!iden || !nom) return alert("Completa campos.");
-
-    // Validación compuesta previa
-    const { data: exists } = await _s.from('tusuario').select('id').eq('identificacion', iden).eq('tipodoc', tipodoc).maybeSingle();
-    if(exists) return alert(`Error: Ya existe un estudiante registrado con el tipo ${tipodoc} e identificación ${iden}.`);
-
     const { data: u, error: e1 } = await _s.from('tusuario').insert({ nombre: nom, identificacion: iden, tipodoc: tipodoc, rol: 'estudiante', estado: 'Activo', debe_cambiar_password: true }).select('id').single();
     if (e1) return alert("Error: " + e1.message);
     const { error: e2 } = await _s.from('testudiantes').insert({ id: u.id, nombre: nom, tipodoc: tipodoc, id_colegio: selectedSchoolId, id_grado: selectedGradeId, id_grupo: selectedGroupId, estado: 'Activo' }); // Originalmente en una línea
@@ -1241,15 +1235,10 @@ async function saveEditStudent(sid, uid) {
     const nTdoc = document.getElementById(`edit-tdoc-${sid}`).value;
 
     if (!nIden || !nNom) return alert("Por favor, completa todos los campos.");
-
-    // Validación compuesta previa
-    const { data: exists } = await _s.from('tusuario').select('id').eq('identificacion', nIden).eq('tipodoc', nTdoc).neq('id', uid).maybeSingle();
-    if(exists) return alert(`Error: Ya existe otro usuario registrado con el tipo ${nTdoc} e identificación ${nIden}.`);
-
     const { error: e1 } = await _s.from('tusuario').update({ nombre: nNom, identificacion: nIden, tipodoc: nTdoc }).eq('id', uid); // Originalmente en una línea
     const { error: e2 } = await _s.from('testudiantes').update({ nombre: nNom, tipodoc: nTdoc }).eq('id', sid); // Originalmente en una línea
 
-    if (e1 || e2) alert("Error al actualizar los datos."); // Originalmente en una línea
+    if (e1 || e2) alert("Error al actualizar los datos, ya existe un usuario con ese N° y tipo de documento."); // Originalmente en una línea
     else loadStudents(selectedGroupId); // Originalmente en una línea
 }
 
@@ -1269,12 +1258,7 @@ async function addGroup(schoolId) {
     if (error) alert("Error: " + error.message); else loadGroups(selectedGradeId, schoolId); // Originalmente en una línea
 }
 
-let bulkUploadRows = [];
-let bulkUploadConflicts = [];
-
 async function viewLoadStudents(schoolId, schoolName) {
-    bulkUploadRows = [];
-    bulkUploadConflicts = [];
     document.getElementById('pageTitle').innerText = "Carga Masiva de Estudiantes";
     document.getElementById('pageDesc').innerText = "Institución: " + schoolName;
     document.getElementById('dynamicBoard').innerHTML = `
@@ -1284,7 +1268,7 @@ async function viewLoadStudents(schoolId, schoolName) {
                 <p id="fileName">Haz clic para seleccionar el Excel (.xlsx)</p>
                 <input type="file" id="fileInput" style="display:none;" accept=".xlsx" onchange="processExcelInteligente(event, ${schoolId})">
             </div>
-            <div id="statusCarga" style="display:none; margin-top:15px; padding:12px; border-radius:8px; background:#f0f7ff; font-size:0.9rem; border:1px solid #dbeafe;">Procesando...</div>
+            <div id="statusCarga" style="display:none;">Procesando...</div>
         </div>
         <div class="card span-2">
             <h3>Estructura</h3>
@@ -1297,8 +1281,7 @@ async function viewLoadStudents(schoolId, schoolName) {
                     Volver a Estructura
                 </button>
             </div>
-        </div>
-        <div id="diagnosticArea" class="span-6"></div>`;
+        </div>`;
 }
 
 async function processExcelInteligente(event, schoolId) {
@@ -1306,125 +1289,40 @@ async function processExcelInteligente(event, schoolId) {
     const reader = new FileReader();
     reader.onload = async (e) => {
         const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-        const schoolName = document.getElementById('pageDesc').innerText.replace('Institución: ', '');
+        const json = XLSX.utils.sheet_to_json(XLSX.read(data, { type: 'array' }).Sheets[XLSX.read(data, { type: 'array' }).SheetNames[0]]);
         
-        // Asignar ID temporal para gestión de limpieza en la UI
-        bulkUploadRows = json.map((r, i) => ({ ...r, _tempId: i }));
-        await runBulkDiagnostic(schoolId, schoolName);
+        const status = document.getElementById('statusCarga');
+        status.style.display = "block";
+        status.innerText = `Procesando ${json.length} registros...`;
+
+        // Lógica original: Llama al RPC inteligente para procesamiento en servidor
+        const { data: res, error } = await _s.rpc('importar_estudiantes_inteligente', {
+            p_estudiantes: json,
+            p_colegio_id: schoolId
+        });
+
+        if (error) {
+            alert("Error crítico: " + error.message);
+            status.style.background = "#FEF2F2";
+            status.style.color = "#991B1B";
+            status.innerText = "Error en la base de datos.";
+        } else {
+            alert("¡Carga masiva completada con éxito!");
+            status.innerText = `Se han procesado ${res.procesados} estudiantes correctamente.`;
+            setTimeout(() => backToSchoolList(), 2000);
+        }
     };
     reader.readAsArrayBuffer(file);
 }
 
-async function runBulkDiagnostic(schoolId, schoolName) {
-    const status = document.getElementById('statusCarga');
-    status.style.display = "block";
-    status.innerText = "Iniciando diagnóstico de seguridad...";
-    
-    const validDocTypes = ['C.C', 'TI', 'C.E', 'EXT', 'PPT'];
-    bulkUploadConflicts = [];
-    let seenInExcel = new Set();
-    
-    // 1. Validación de Formato y Duplicidad Interna (Excel)
-    bulkUploadRows.forEach(row => {
-        const iden = String(row.identificacion || '').trim();
-        const tdoc = String(row.tipodoc || '').trim().toUpperCase().replace(/\./g, '');
-        if (!iden || !row.nombre) { bulkUploadConflicts.push({ tempId: row._tempId, row, error: "Datos incompletos en la fila" }); return; }
-        if (seenInExcel.has(iden)) { bulkUploadConflicts.push({ tempId: row._tempId, row, error: "Documento duplicado dentro del mismo Excel" }); }
-        seenInExcel.add(iden);
-        const normalizedTdoc = tdoc === 'CC' ? 'C.C' : (tdoc === 'TI' ? 'TI' : (tdoc === 'CE' ? 'C.E' : row.tipodoc));
-        if (!validDocTypes.includes(normalizedTdoc)) { bulkUploadConflicts.push({ tempId: row._tempId, row, error: `Tipo de documento inválido: ${row.tipodoc}` }); }
-    });
-    
-    // 2. Validación de Duplicidad Externa (Base de Datos Global)
-    const idsToCheck = bulkUploadRows.map(r => String(r.identificacion || '').trim()).filter(id => id);
-    if (idsToCheck.length > 0) {
-        const { data: existing, error } = await _s.from('v_perfil_usuario').select('identificacion, tipodoc, nombre_institucion').in('identificacion', idsToCheck);
-        if (!error && existing) {
-            bulkUploadRows.forEach(row => {
-                const iden = String(row.identificacion || '').trim();
-                const tdocRaw = String(row.tipodoc || '').trim().toUpperCase().replace(/\./g, '');
-                
-                const match = existing.find(u => 
-                    String(u.identificacion).trim() === iden && 
-                    String(u.tipodoc || '').trim().toUpperCase().replace(/\./g, '') === tdocRaw
-                );
-                if (match) {
-                    if (!bulkUploadConflicts.find(c => c.tempId === row._tempId)) {
-                        bulkUploadConflicts.push({ tempId: row._tempId, row, error: `Ya registrado con tipo ${match.tipodoc} en: ${match.nombre_institucion || 'Otra Institución'}` });
-                    }
-                }
-            });
-        }
-    }
-    renderBulkDiagnosticUI(schoolId, schoolName);
-}
-
-function renderBulkDiagnosticUI(schoolId, schoolName) {
-    const area = document.getElementById('diagnosticArea');
-    const status = document.getElementById('statusCarga');
-    if (bulkUploadConflicts.length > 0) {
-        status.innerHTML = `<span style="color:#b91c1c; font-weight:700;"><i class="fa-solid fa-triangle-exclamation"></i> Se detectaron ${bulkUploadConflicts.length} registros con conflictos.</span>`;
-        area.innerHTML = `<div class="card span-6" style="border: 2px solid var(--danger); background: #fff5f5; margin-top:20px;"><h3 style="color:#b91c1c;"><i class="fa-solid fa-shield-halved"></i> Panel de Resolución de Conflictos</h3><p style="font-size:0.9rem; color:#7f1d1d; margin-bottom:20px;">Los siguientes estudiantes ya existen en el sistema o tienen datos erróneos. <strong>Debes omitirlos</strong> de esta carga para poder continuar.</p><div style="max-height: 350px; overflow-y: auto; border-radius: 10px; border: 1px solid #fecaca;"><table class="data-table" style="margin:0;"><thead style="position: sticky; top: 0; z-index: 10; background: #fee2e2;"><tr><th>Estudiante</th><th>ID / Doc</th><th>Motivo</th><th style="text-align:right;">Acción</th></tr></thead><tbody>${bulkUploadConflicts.map(c => `<tr><td><strong>${c.row.nombre || '—'}</strong></td><td><code>${c.row.identificacion} (${c.row.tipodoc})</code></td><td><span style="color:#b91c1c; font-size:0.85rem; font-weight:600;">${c.error}</span></td><td style="text-align:right;"><button class="btn-main" style="width:auto; padding:6px 15px; background:#ef4444;" onclick="omitirFilaConflicto(${c.tempId}, ${schoolId}, '${schoolName}')"><i class="fa-solid fa-user-minus"></i> Omitir</button></td></tr>`).join('')}</tbody></table></div></div>`;
-    } else {
-        const total = bulkUploadRows.length;
-        if (total === 0) { status.innerHTML = `<span style="color:var(--secondary);">No hay registros válidos para cargar.</span>`; area.innerHTML = ''; }
-        else {
-            status.innerHTML = `<span style="color:#15803d; font-weight:700;"><i class="fa-solid fa-circle-check"></i> ¡Archivo Validado! Registros listos: ${total}</span>`;
-            area.innerHTML = `<div style="text-align:center; padding:40px; background:#f0fdf4; border: 2px dashed #22c55e; border-radius:15px; margin-top:20px;"><i class="fa-solid fa-file-circle-check" style="font-size:3.5rem; color:#22c55e; margin-bottom:15px;"></i><h3 style="color:#166534;">Carga Segura Habilitada</h3><p style="margin-bottom:25px; color:#166534;">Todos los conflictos han sido resueltos. Los datos están listos para ser insertados.</p><button class="btn-main" style="width:auto; padding:18px 50px; font-size:1.1rem; background:#16a34a;" onclick="ejecutarCargaLimpia(${schoolId})"><i class="fa-solid fa-cloud-arrow-up"></i> REALIZAR CARGA MASIVA</button></div>`;
-        }
-    }
-}
-
-function omitirFilaConflicto(tempId, schoolId, schoolName) {
-    bulkUploadRows = bulkUploadRows.filter(r => r._tempId !== tempId);
-    runBulkDiagnostic(schoolId, schoolName);
-}
-
-async function ejecutarCargaLimpia(schoolId) {
-    const status = document.getElementById('statusCarga');
-    status.innerText = "Insertando datos validados...";
-    const finalData = bulkUploadRows.map(({ _tempId, ...rest }) => rest);
-    const { data: res, error } = await _s.rpc('importar_estudiantes_inteligente', { p_estudiantes: finalData, p_colegio_id: schoolId });
-    if (error) alert("Error en la carga: " + error.message);
-    else { alert(`¡Carga completada con éxito! Se procesaron ${res.procesados} estudiantes.`); backToSchoolList(); }
-}
-
 async function viewDistReports() {
     const { data: cols } = await _s.from('tcolegios').select('id, nombre').eq('id_dist', sess.id).order('nombre');
-    document.getElementById('dynamicBoard').innerHTML = `
-        <div class="card span-6">
-            <h3>Estado de Evaluación</h3>
-            <p style="color:var(--secondary); margin-bottom:20px;">Selecciona una de tus instituciones para consultar los informes de resultados.</p>
-            <select id="distColegioSelector" class="pill-btn" style="width:100%; height:auto; padding:12px; font-size:1rem;" onchange="viewSchoolReportsPanel(this.value, this.options[this.selectedIndex].text)">
-                <option value="">-- Seleccionar Institución --</option>
-                ${(cols || []).map(c => `<option value="${c.id}">${esc(c.nombre)}</option>`).join('')}
-            </select>
-        </div>`;
+    document.getElementById('dynamicBoard').innerHTML = `<div class="card span-6"><h3>Estado de Evaluación</h3><select id="distColegioSelector" onchange="viewDistCollegeReports(this.value, this.options[this.selectedIndex].text)"><option value="">-- Seleccionar --</option>${cols.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('')}</select></div>`;
 }
 
-async function viewSchoolReportsPanel(id, nom) {
+async function viewDistCollegeReports(id, nom) {
     if (!id) return;
-    document.getElementById('dynamicBoard').innerHTML = `
-        <div class="card span-6">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h3>Informes: ${nom}</h3>
-                <button class="btn-main" style="width:auto; padding:10px 20px; background:var(--secondary);" onclick="${sess.rol==='admin'?'viewAdminReports()':'viewDistReports()'}">Volver</button>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div style="text-align: center; padding: 30px; border: 2px solid var(--primary); border-radius: 8px; cursor: pointer;" onclick="viewIndividualReports('${id}')">
-                    <i class="fa-solid fa-user" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
-                    <h4>Informes Individuales</h4>
-                    <p style="color: var(--secondary); margin-top: 10px;">Ver resultados por estudiante</p>
-                </div>
-                <div style="text-align: center; padding: 30px; border: 2px solid var(--success); border-radius: 8px; cursor: pointer;" onclick="viewGroupReports('${id}')">
-                    <i class="fa-solid fa-users" style="font-size: 3rem; color: var(--success); margin-bottom: 15px;"></i>
-                    <h4>Informes Grupales</h4>
-                    <p style="color: var(--secondary); margin-top: 10px;">Análisis estadístico grupal</p>
-                </div>
-            </div>
-        </div>`;
+    document.getElementById('dynamicBoard').innerHTML = `<div class="card span-6"><h3>${nom}</h3><div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;"><div onclick="showDistCollegeWithSplitView('${id}', '${nom}')"><h4>Individuales</h4></div><div onclick="viewDistGroupReports('${id}', '${nom}')"><h4>Grupales</h4></div></div></div>`;
 }
 
 async function openLinkTestForm(schoolId, schoolName) {

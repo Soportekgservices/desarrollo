@@ -1,3 +1,287 @@
+const TEMPLATE_PATH = 'src/templates/'; // Ruta relativa para evitar problemas de raíz en entornos locales
+
+const AREA_TO_CODE = {
+  "Administrativas y Contables": "C",
+  "Ciencias de la Salud": "S",
+  "Humanidades y Ciencias Sociales": "H",
+  "Artes y Creatividad": "A",
+  "Ingenierías y Computación": "I",
+  "Defensa y Seguridad": "D",
+  "Exactas y Agrarias": "E"
+};
+
+const AREA_CODE_TO_KEY = Object.fromEntries(
+  Object.entries(AREA_TO_CODE).map(([key, code]) => [code, key])
+);
+
+const DEFAULT_AREA_INFO = {
+  descripcion: "Información no disponible",
+  intereses: "",
+  habilidades: "",
+  fortalezas: "",
+  a_desarrollar: "",
+  sector_laboral: "",
+  carreras: []
+};
+
+const RESULT_DOMINANCE_THRESHOLD = 10;
+
+function normalizeAreaCode(area) {
+  if (!area) return null;
+  const raw = String(area).trim();
+  if (AREA_CODE_TO_KEY[raw]) return raw;
+  if (AREA_TO_CODE[raw]) return AREA_TO_CODE[raw];
+  const upper = raw.toUpperCase();
+  if (AREA_CODE_TO_KEY[upper]) return upper;
+  return Object.keys(AREA_TO_CODE).find(key => key.toLowerCase() === raw.toLowerCase()) || null;
+}
+
+function getAreaKeyFromCode(code) {
+  return AREA_CODE_TO_KEY[code] || code;
+}
+
+function getAreaLabel(code) {
+  return getAreaKeyFromCode(code);
+}
+
+function sortResultAreas(resultados) {
+  return Object.entries(resultados || {}).map(([area, value]) => {
+    const code = normalizeAreaCode(area) || String(area).trim();
+    return { code, label: getAreaLabel(code), score: Number(value) || 0 };
+  }).sort((a, b) => b.score - a.score);
+}
+
+function getDominantAreas(sortedAreas) {
+  if (!sortedAreas.length) return [];
+  const topScore = sortedAreas[0].score;
+  const winners = sortedAreas.filter(a => topScore - a.score <= RESULT_DOMINANCE_THRESHOLD && a.score > 0);
+  return winners.length ? winners : [sortedAreas[0]];
+}
+
+function getProfileType(sortedAreas) {
+  if (!sortedAreas.length) return 'Sin definir';
+  const top = sortedAreas[0].score;
+  const second = sortedAreas[1]?.score || 0;
+  const gap = top - second;
+  return gap < RESULT_DOMINANCE_THRESHOLD ? 'Combinado' : 'Simple';
+}
+
+function getVocationalLevel(score) {
+  if (score >= 75) return 'Alto';
+  if (score > 45) return 'Medio';
+  return 'Bajo';
+}
+
+async function fetchAreaInfos(codes) {
+  if (!codes || !codes.length) return [];
+  const uniqueCodes = [...new Set(codes.filter(Boolean))];
+  const { data, error } = await _s.from('tareas_vocacionales').select('*').in('codigo_area', uniqueCodes);
+  if (error) {
+    console.error('Error loading tareas_vocacionales:', error);
+    return [];
+  }
+  return data || [];
+}
+
+async function buildAreaInfo(areaCodes) {
+  const normalized = [...new Set((areaCodes || []).map(normalizeAreaCode).filter(Boolean))];
+  if (!normalized.length) return DEFAULT_AREA_INFO;
+
+  const dbItems = await fetchAreaInfos(normalized);
+  // Limpiamos posibles espacios en blanco de la base de datos (tipo character)
+  const dbMap = Object.fromEntries((dbItems || []).map(item => [item.codigo_area.trim(), item]));
+
+  const combined = normalized.map(code => {
+    if (dbMap[code]) return dbMap[code];
+    const key = AREA_CODE_TO_KEY[code];
+    if (key && AREAS_VOCACIONALES[key]) {
+      return { codigo_area: code, ...AREAS_VOCACIONALES[key] };
+    }
+    return null;
+  }).filter(Boolean);
+
+  if (!combined.length) return DEFAULT_AREA_INFO;
+  if (combined.length === 1) return combined[0];
+
+  return {
+    descripcion: combined.map(item => item.descripcion).filter(Boolean).join(' '),
+    intereses: combined.map(item => item.intereses).filter(Boolean).join(' / '),
+    habilidades: combined.map(item => item.habilidades).filter(Boolean).join(' / '),
+    fortalezas: combined.map(item => item.fortalezas).filter(Boolean).join(' / '),
+    a_desarrollar: combined.map(item => item.a_desarrollar).filter(Boolean).join(' / '),
+    sector_laboral: combined.map(item => item.sector_laboral).filter(Boolean).join(' / '),
+    carreras: [...new Set(combined.flatMap(item => item.carreras || []))]
+  };
+}
+
+/**
+ * Genera los componentes visuales SVG para las plantillas que lo requieran
+ */
+function generateVisuals(scores, dominantCode) {
+    // Lógica para barras CHASIDE (Escala 14)
+    const barPositions = [30, 74, 118, 162, 206, 250, 294];
+    const codes = ['C', 'H', 'A', 'S', 'I', 'D', 'E'];
+    
+    const barSvg = codes.map((code, index) => {
+        const value = scores[code] || 0;
+        const height = Math.round((value / 14) * 200);
+        const y = 220 - height;
+        const fill = code === dominantCode ? '#1A3A5C' : (value >= 6 ? '#7BA7CC' : '#A0B9CF');
+        const labelColor = code === dominantCode ? '#1A3A5C' : '#2D3748';
+        return `<rect x="${barPositions[index]}" y="${y}" width="34" height="${height}" fill="${fill}" rx="2"/>
+                <text x="${barPositions[index] + 17}" y="${y - 4}" text-anchor="middle" font-size="7.5" fill="${labelColor}" font-weight="600">${value}</text>
+                <text x="${barPositions[index] + 17}" y="233" text-anchor="middle" font-size="8" fill="${labelColor}" font-weight="500">${code}</text>`;
+    }).join('');
+
+    const maxRadius = 110;
+    const radarPositions = { C: -90, H: -38.57, A: 12.28, S: 63.14, I: 114, D: 164.85, E: 215.71 };
+    const chartPoints = Object.entries(radarPositions).map(([code, angle]) => {
+        const radius = ((scores[code] || 0) / 14) * maxRadius;
+        const rad = (angle * Math.PI) / 180;
+        return { x: 175 + Math.cos(rad) * radius, y: 145 + Math.sin(rad) * radius, code };
+    });
+
+    const radarPoints = chartPoints.map(p => `${p.x},${p.y}`).join(' ');
+    const radarDots = chartPoints.map(p => `<circle cx="${p.x}" cy="${p.y}" r="${p.code === dominantCode ? 4 : 2.5}" fill="${p.code === dominantCode ? '#1A3A5C' : '#2563A8'}"/>`).join('');
+
+    return { barSvg, radarPoints, radarDots };
+}
+
+/**
+ * Obtiene un valor anidado de un objeto usando una ruta de puntos (ej: "areaInfo.descripcion")
+ */
+function getNestedValue(obj, path) {
+    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+}
+
+async function buildReportContext(resultados) {
+  const sortedAreas = sortResultAreas(resultados);
+  const dominantAreas = getDominantAreas(sortedAreas);
+  const maxScore = sortedAreas[0]?.score || 0;
+  const tipoPerfil = getProfileType(sortedAreas);
+  const nivelVocacion = getVocationalLevel(maxScore);
+  const dominant = dominantAreas.map(item => item.code).join(', ') || 'Sin definir';
+  const dominantLabels = dominantAreas.map(item => item.label).join(' / ') || 'Sin definir';
+  const areaInfo = await buildAreaInfo(dominantAreas.map(item => item.code));
+  const dominantCode = dominantAreas[0]?.code || 'C';
+  const topScorePoints = Math.round((maxScore / 100) * 14);
+
+  // Scores normalizados (0-14) para visuales
+  const rawScores = {};
+  sortedAreas.forEach(a => { rawScores[a.code] = Math.round((a.score / 100) * 14); });
+  const visuals = generateVisuals(rawScores, dominantCode);
+
+  // Calculamos la suma real de puntos de todas las áreas (Escala 0-98)
+  const totalRawPoints = Object.values(rawScores).reduce((acc, val) => acc + val, 0);
+
+  // Cálculos para Donas (SVG)
+  const circumference = 2 * Math.PI * 40;
+  const innerCircumference = 2 * Math.PI * 26;
+  const donutTotalDash = Math.round((topScorePoints / 14) * circumference * 10) / 10;
+  const donutAreaDash = Math.round((topScorePoints / 14) * innerCircumference * 10) / 10;
+
+  // Tabla de resultados HTML
+  const tableRowsHtml = Object.entries(rawScores).map(([code, value]) => {
+      const level = value >= 10 ? 'Alto' : value >= 6 ? 'Medio' : 'Bajo';
+      const rowClass = code === dominantCode ? 'class="area-dominante-row"' : '';
+      return `<tr ${rowClass}><td style="font-weight:700; color:var(--azul-oscuro);">${code}</td><td>${getAreaLabel(code)}</td><td style="text-align:center;">${value}</td><td style="text-align:center;"><span style="color:var(--gris-suave); font-size:7.5pt;">${level}</span></td></tr>`;
+  }).join('');
+
+  const conclusionListHtml = [
+      `<li><b>Fortaleza clave:</b> ${escapeHtml(areaInfo.fortalezas || 'No especificada')}.</li>`,
+      `<li><b>Acción recomendada:</b> Participar en actividades relacionadas con ${escapeHtml(dominantLabels.toLowerCase())}.</li>`,
+      `<li><b>Seguimiento:</b> Reevaluar al finalizar el año escolar para confirmar orientación.</li>`,
+      `<li><b>Orientador:</b> Compartir resultados con familia y docentes para acompañamiento.</li>`
+  ].join('');
+
+  // Preparar colores y etiquetas para el radar (heptágono)
+  const areaStyles = {};
+  const codes = ['C', 'H', 'A', 'S', 'I', 'D', 'E'];
+  codes.forEach(c => {
+      const isDominant = c === dominantCode;
+      areaStyles[`color${c}`] = isDominant ? '#1A3A5C' : '#4A5568';
+      areaStyles[`weight${c}`] = isDominant ? '700' : '600';
+      areaStyles[`label${c}`] = c + (isDominant ? ' ★' : '');
+  });
+
+  return { 
+    sortedAreas, dominantAreas, dominant, dominantLabels, 
+    maxScore, // Mantenemos el porcentaje (0-100)
+    topScore: topScorePoints, // Puntos área dominante (0-14)
+    totalRawPoints, // Suma de todos los puntos (0-98)
+    tipoPerfil, nivelVocacion, areaInfo, dominantCode, 
+    ...rawScores, ...visuals,
+    ...areaStyles,
+    // Normalización de variables para la plantilla
+    carrerasHtml: (Array.isArray(areaInfo.carreras) ? areaInfo.carreras : []).map(c => `<span class="carrera-tag">${escapeHtml(c)}</span>`).join(''),
+    careerTags: (Array.isArray(areaInfo.carreras) ? areaInfo.carreras : []).map(c => `<span class="carrera-tag">${escapeHtml(c)}</span>`).join(''),
+    interesesText: areaInfo.intereses || '',
+    habilidadesText: areaInfo.habilidades || '',
+    fortalezasText: areaInfo.fortalezas || '',
+    aDesarrollarText: areaInfo.a_desarrollar || '',
+    sectorLaboralText: areaInfo.sector_laboral || '',
+    informeDescripcion: areaInfo.descripcion || '',
+    tableRowsHtml,
+    conclusionListHtml,
+    circumference,
+    innerCircumference,
+    donutTotalDash,
+    donutAreaDash,
+    donutTotalOffset: Math.round((circumference - donutTotalDash) / 2 * 10) / 10,
+    donutAreaOffset: Math.round((innerCircumference - donutAreaDash) / 2 * 10) / 10,
+    percentTotal: Math.round((topScorePoints / 98) * 100), 
+    percentArea: Math.round((topScorePoints / 14) * 100),
+    combinedProfileNote: tipoPerfil.toLowerCase() === 'combinado' ? 'Se evidencia combinación de áreas.' : 'No aplica. Diferencia clara.',
+    projectionPhrase: nivelVocacion === 'Alto' ? `Alta claridad. El estudiante cuenta con un perfil ${dominantLabels.toLowerCase()} sólido.` : `Claridad moderada. El estudiante presenta un perfil ${dominantLabels.toLowerCase()} en desarrollo.`,
+    vocationalSummary: nivelVocacion === 'Alto' ? 'Alta vocación confirmada' : 'Vocación en desarrollo confirmada',
+    referenceTotal: 98 // El máximo total de CHASIDE es 98
+  };
+}
+
+/**
+ * NUEVO MOTOR DE INFORMES DINÁMICO
+ * Carga plantillas HTML externas basadas en tipo_informe
+ */
+async function renderInforme(d, funcionVolver) {
+    const tipo = (d.pruebaConfig?.tipo_informe || 'default').toLowerCase();
+    const board = document.getElementById("dynamicBoard");
+    
+    // Quitamos la cuadrícula de Dashboard para que el informe fluya verticalmente
+    board.classList.remove('bento-grid');
+    
+    try {
+        // Cargamos la plantilla física desde la carpeta de templates
+        const response = await fetch(`${TEMPLATE_PATH}${tipo}.html`);
+        if (!response.ok) throw new Error(`Archivo de plantilla no encontrado: ${tipo}.html`);
+        const template = await response.text();
+
+        const context = {
+            ...d,
+            studentName: d.st?.nombre || 'Estudiante',
+            studentId: d.st?.identificacion || d.st?.tusuario?.identificacion || 'N/A',
+            gradeLabel: d.st?.tgrados?.nombre || 'N/A',
+            colegioNombre: d.colegioNombre || 'N/A',
+            fechaAplicacion: d.fechaActual || new Date().toLocaleDateString(),
+            year: new Date().getFullYear()
+        };
+
+        board.innerHTML = renderTemplate(template, context);
+
+        // Vincular botón de volver si existe en la plantilla
+        const backBtn = document.getElementById('reportBackButton');
+        if (backBtn) {
+            backBtn.onclick = () => { if (typeof funcionVolver === 'function') funcionVolver(); };
+        }
+    } catch (err) {
+        console.error("Error en renderInforme:", err);
+        board.innerHTML = `<div class="card span-6"><h3>Error</h3><p>No se pudo cargar la plantilla "${tipo}". Verifique que exista el archivo en ${TEMPLATE_PATH}.</p></div>`;
+    }
+}
+
+// Variables de configuración para motor dinámico
+let tipoRespuesta = 'likert_1_5';
+let logicaCalculo = 'promedio_por_area';
+
 async function viewRector() {
     document.getElementById('pageTitle').innerText = "Panel Institucional";
     document.getElementById('pageDesc').innerText = "Gestión académica y seguimiento de evaluaciones.";
@@ -177,33 +461,15 @@ async function loadRectorStudents(groupId) {
 async function viewRectorInformes() {
     document.getElementById('pageTitle').innerText = "Informes y Resultados";
     document.getElementById('pageDesc').innerText = "Informes individuales y grupales.";
-    document.getElementById('dynamicBoard').innerHTML = `<div class="card span-6"><h3>Panel de Informes</h3><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;"><div style="text-align: center; padding: 30px; border: 2px solid var(--primary); border-radius: 8px; cursor: pointer;" onclick="viewIndividualReports()"><i class="fa-solid fa-user" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i><h4>Informes Individuales</h4><p style="color: var(--secondary); margin-top: 10px;">Ver resultados de estudiantes específicos</p></div><div style="text-align: center; padding: 30px; border: 2px solid var(--success); border-radius: 8px; cursor: pointer;" onclick="viewGroupReports()"><i class="fa-solid fa-users" style="font-size: 3rem; color: var(--success); margin-bottom: 15px;"></i><h4>Informes Grupales</h4><p style="color: var(--secondary); margin-top: 10px;">Análisis estadístico por grado/grupo</p></div></div></div>`;
+    document.getElementById('dynamicBoard').innerHTML = `<div class="card span-6"><h3>Panel de Informes</h3><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;"><div style="text-align: center; padding: 30px; border: 2px solid var(--primary); border-radius: 8px; cursor: pointer;" onclick="viewRectorInformesIndividuales()"><i class="fa-solid fa-user" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i><h4>Informes Individuales</h4><p style="color: var(--secondary); margin-top: 10px;">Ver resultados de estudiantes específicos</p></div><div style="text-align: center; padding: 30px; border: 2px solid var(--success); border-radius: 8px; cursor: pointer;" onclick="viewRectorInformesGrupales()"><i class="fa-solid fa-users" style="font-size: 3rem; color: var(--success); margin-bottom: 15px;"></i><h4>Informes Grupales</h4><p style="color: var(--secondary); margin-top: 10px;">Análisis estadístico por grado/grupo</p></div></div></div>`;
 }
 
-let currentReportSchoolId = null;
-
-async function viewIndividualReports(forcedSchoolId = null) {
-    currentReportSchoolId = forcedSchoolId;
+async function viewRectorInformesIndividuales() {
     document.getElementById('pageTitle').innerText = "Informes Individuales";
     document.getElementById('pageDesc').innerText = "Selecciona un alumno por grado para ver su informe.";
-    
-    let schoolId, schoolName = "Institución";
-    if (forcedSchoolId) {
-        schoolId = forcedSchoolId;
-        const { data: col } = await _s.from('tcolegios').select('nombre').eq('id', schoolId).single();
-        if(col) schoolName = col.nombre;
-    } else {
-        const { data: school } = await getRectorSchool();
-        if (!school) { document.getElementById('dynamicBoard').innerHTML = `<div class="card span-6"><h3>Sin Colegio Asignado</h3></div>`; return; }
-        schoolId = school.id;
-        schoolName = school.nombre;
-    }
-
-    const backBtnHtml = forcedSchoolId 
-        ? `<button class="btn-main" style="width:auto; padding:8px 15px; background:var(--secondary);" onclick="viewSchoolReportsPanel('${schoolId}', '${schoolName}')">Volver al Panel</button>`
-        : `<button class="btn-main" style="width:auto; padding:8px 15px; background:var(--secondary);" onclick="viewRectorInformes()">Volver</button>`;
-
-    const { data: assignments } = await _s.from('tsolicitudes_aplicacion').select(`id_grado, id_grupo, tgrados ( nombre ), tgrupos ( nombre )`).eq('id_colegio', schoolId).eq('estado', 'aprobada').order('id_grado', { ascending: true });
+    const { data: school } = await getRectorSchool();
+    if (!school) { document.getElementById('dynamicBoard').innerHTML = `<div class="card span-6"><h3>Sin Colegio Asignado</h3></div>`; return; }
+    const { data: assignments } = await _s.from('tsolicitudes_aplicacion').select(`id_grado, id_grupo, tgrados ( nombre ), tgrupos ( nombre )`).eq('id_colegio', school.id).eq('estado', 'aprobada').order('id_grado', { ascending: true });
     if (!assignments || assignments.length === 0) { document.getElementById('dynamicBoard').innerHTML = `<div class="card span-6"><h3>Sin pruebas asignadas</h3></div>`; return; }
     const gradeMap = new Map(); const assignedGroupIds = new Set();
     assignments.forEach(assign => { if (!assign.id_grado) return; if (!gradeMap.has(assign.id_grado)) { gradeMap.set(assign.id_grado, { id: assign.id_grado, nombre: assign.tgrados?.nombre || `Grado ${assign.id_grado}`, grupos: new Map() }); } const gradeEntry = gradeMap.get(assign.id_grado); if (assign.id_grupo) { assignedGroupIds.add(assign.id_grupo); gradeEntry.grupos.set(assign.id_grupo, assign.tgrupos?.nombre || `Grupo ${assign.id_grupo}`); } }); // Originalmente en una línea
@@ -212,7 +478,7 @@ async function viewIndividualReports(forcedSchoolId = null) {
     const studentIds = (estudiantes || []).map(e => e.id).filter(Boolean); const completedSet = new Set(); // Originalmente en una línea
     if (studentIds.length) { const { data: resultados } = await _s.from('tresultados').select('id, id_estudiante').in('id_estudiante', studentIds); (resultados || []).forEach(r => completedSet.add(r.id_estudiante)); }
     const studentsByGrade = new Map(); (estudiantes || []).forEach(est => { if (!studentsByGrade.has(est.id_grado)) { studentsByGrade.set(est.id_grado, []); } studentsByGrade.get(est.id_grado).push(est); });
-    let content = `<div class="card span-6"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;"><h3>Estudiantes con prueba asignada</h3>${backBtnHtml}</div><div style="margin-top: 20px;">`;
+    let content = `<div class="card span-6"><h3>Estudiantes con prueba asignada</h3><div style="margin-top: 20px;">`;
     for (const [gradeId, gradeEntry] of gradeMap.entries()) {
         const gradeStudents = studentsByGrade.get(gradeId) || []; const total = gradeStudents.length; const completed = gradeStudents.filter(s => completedSet.has(s.id)).length; const pending = total - completed;
         const groupDetails = Array.from(gradeEntry.grupos.entries()).map(([groupId, groupName]) => { const groupStudents = gradeStudents.filter(s => s.id_grupo === groupId); if (!groupStudents.length) return ''; return `<div style="margin-bottom: 20px;"><h5 style="margin-bottom: 10px; color: var(--primary);">Grupo ${groupName}</h5>${groupStudents.map(st => `<div style="padding: 12px; margin-bottom: 8px; border: 1px solid #e0e0e0; border-radius: 8px; display:flex; justify-content:space-between; align-items:center; background:#fff; ${completedSet.has(st.id) ? 'cursor:pointer;' : ''}" ${completedSet.has(st.id) ? `onclick="viewInformeEstudiante('${st.id}')"` : ''}><div><strong>${st.nombre || 'Sin nombre'}</strong><br><small style="color: var(--secondary);">${st.tgrados?.nombre || 'Sin grado'}</small></div><span style="padding: 4px 10px; border-radius: 999px; font-size:0.8rem; ${completedSet.has(st.id) ? 'background: var(--success); color: white;' : 'background: var(--danger); color: white;'}">${completedSet.has(st.id) ? 'Completado' : 'Pendiente'}</span></div>`).join('')}</div>`; }).join('');
@@ -225,38 +491,36 @@ async function viewInformeEstudiante(eid) {
     const { data: studentDataPreview } = await _s.from('testudiantes').select('id, id_grupo, tgrupos ( id_colegio )').eq('id', eid).single();
     const colegioId = studentDataPreview.tgrupos?.id_colegio;
     const { data: colegioData } = await _s.from('tcolegios').select('resultados_habilitados').eq('id', colegioId).single();
-    if (!colegioData?.resultados_habilitados && sess.rol !== 'admin' && sess.rol !== 'distribuidor') return alert("Los resultados no están disponibles. El distribuidor debe habilitar la visualización.");
-    const { data: res } = await _s.from('tresultados').select('*, tpruebas(nombre)').eq('id_estudiante', eid).single(); // Originalmente en una línea
-    const { data: st } = await _s.from('testudiantes').select('*, tcolegios(nombre), tgrados(nombre), tgrupos(nombre), tusuario(identificacion)').eq('id', eid).single(); // Originalmente en una línea
-    const resultados = JSON.parse(res.respuestas || '{}'); const areas = Object.keys(resultados); const puntuaciones = areas.map(a => resultados[a]); // Originalmente en una línea
-    const maxScore = Math.max(...puntuaciones); const dominant = areas[puntuaciones.indexOf(maxScore)]; const areaInfo = AREAS_VOCACIONALES[dominant]; // Originalmente en una línea
-    const colegio = st?.tcolegios?.nombre || 'No especificado';
-    document.getElementById('dynamicBoard').innerHTML = `
-        <div id="informe-visual" class="span-6">
-            <header><div class="logo"><h2 style="margin:0; color:white; font-size:24px;">EduEficiente</h2></div><div class="titulo-informe"><h1>INFORME DE ORIENTACIÓN VOCACIONAL</h1><p>${colegio}</p><p style="margin-top:8px; font-size:0.9rem; opacity:0.85;">Fecha: ${new Date().toLocaleDateString('es-ES')}</p></div></header>
-            <section class="info-estudiante" style="display: flex; justify-content: space-between; padding: 20px 40px; background: var(--color-gris-claro); border-bottom: 1px solid #e0e0e0;"><div style="flex: 1;"><p style="margin: 0 0 8px 0;"><strong>Nombre:</strong> ${st?.nombre}</p><div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;"><div><p style="margin: 0; font-size: 0.85rem;"><strong>ID:</strong> ${st?.tusuario?.identificacion}</p></div><div><p style="margin: 0; font-size: 0.85rem;"><strong>Grado:</strong> ${st?.tgrados?.nombre}</p></div><div><p style="margin: 0; font-size: 0.85rem;"><strong>Grupo:</strong> ${st?.tgrupos?.nombre}</p></div></div></div></section>
-            <main><div class="columna-izquierda"><table><thead><tr><th>Área</th><th>Puntaje</th></tr></thead><tbody>${areas.map((a, i) => `<tr><td>${a}</td><td>${puntuaciones[i]}%</td></tr>`).join('')}</tbody></table><div class="area-dominante"><div class="seccion-titulo">Área dominante:</div><div class="seccion-contenido"><p><strong>${dominant}</strong> (${maxScore}%)</p></div></div><div class="descripcion"><div class="seccion-titulo">Descripción:</div><div class="seccion-contenido"><p>${areaInfo ? areaInfo.descripcion : ''}</p></div></div></div><div class="columna-derecha"><div class="grafico-container"><canvas id="radarChartRector"></canvas></div><div class="carreras-sugeridas"><div class="seccion-titulo">Carreras sugeridas:</div><div class="seccion-contenido"><ul>${areaInfo ? areaInfo.carreras.map(c => `<li>${c}</li>`).join('') : ''}</ul></div></div></div></main>
-            <footer>En EduEficiente acompañamos tu descubrimiento.</footer>
-        </div>
-        <div style="text-align:center; margin-top:20px;"><button onclick="viewIndividualReports('${currentReportSchoolId || ''}')" class="btn-main" style="width:auto; padding:12px 30px;">Volver</button></div>`;
-    const ctx = document.getElementById('radarChartRector').getContext('2d');
-    new Chart(ctx, { 
-        type: 'radar', 
-        data: { labels: areas, datasets: [{ data: puntuaciones, fill: true, backgroundColor: 'rgba(30, 58, 95, 0.3)', borderColor: 'rgb(30, 58, 95)' }] }, 
-        options: { 
-            maintainAspectRatio: false, 
-            animation: { duration: 1000, easing: 'easeInOutQuart' },
-            scales: { r: { suggestedMin: 0, suggestedMax: 100, pointLabels: { font: { size: 12, family: 'Montserrat, sans-serif' } } } }, 
-            plugins: { 
-                legend: { display: false }, 
-                datalabels: { 
-                    color: '#333', 
-                    font: { weight: 'bold' },
-                    formatter: (v) => v + '%' 
-                } 
-            } 
-        } 
-    });
+    if (!colegioData?.resultados_habilitados) return alert("Los resultados no están disponibles. El distribuidor debe habilitar la visualización.");
+    const { data: res } = await _s.from('tresultados').select('*, tpruebas(nombre, tipo_respuesta, logica_calculo, tipo_informe)').eq('id_estudiante', eid).single();
+    const { data: st } = await _s.from('testudiantes').select('*, tcolegios(nombre, tdepartamentos(nombre)), tgrados(nombre), tgrupos(nombre), tusuario(identificacion)').eq('id', eid).single();
+
+    tipoRespuesta = res.tpruebas?.tipo_respuesta || tipoRespuesta;
+    logicaCalculo = res.tpruebas?.logica_calculo || logicaCalculo;
+
+    const resultados = JSON.parse(res.respuestas || '{}');
+    const areas = Object.keys(resultados);
+    const puntuaciones = areas.map(a => resultados[a]);
+
+    const reportContext = await buildReportContext(resultados);
+    const colegioNombre = st?.tcolegios?.nombre || 'No especificado';
+    const departamentoNombre = st?.tcolegios?.tdepartamentos?.nombre || 'No especificado';
+    const fechaActual = new Date().toLocaleDateString('es-ES');
+
+    const datosParaInforme = {
+        st,
+        res,
+        pruebaConfig: res.tpruebas,
+        resultados,
+        areas,
+        puntuaciones,
+        colegioNombre,
+        departamentoNombre,
+        fechaActual,
+        ...reportContext
+    };
+
+    await renderInforme(datosParaInforme, () => viewRectorInformesIndividuales());
 }
 
 async function viewRectorInformesGrupales() {
@@ -337,8 +601,13 @@ async function viewStudent() {
     if (!groupData) { renderStudentBlocked("Error en datos del grupo", "No se pudieron cargar los datos de tu colegio, grado o grupo."); return; } // Originalmente en una línea
     const { count: pendCola } = await _s.from('tsolicitudes_aplicacion').select('*', { count: 'exact', head: true }).eq('id_grupo', idGrupo).eq('estado', 'pendiente'); // Originalmente en una línea
     const today = todayLocalISODate(); // Originalmente en una línea
-    const { data: sols } = await _s.from('tsolicitudes_aplicacion').select('id_prueba, fecha_inicio, fecha_fin').eq('id_grupo', idGrupo).eq('estado', 'aprobada').lte('fecha_inicio', today).gte('fecha_fin', today).order('id', { ascending: false }).limit(1); // Originalmente en una línea
+    const { data: sols } = await _s.from('tsolicitudes_aplicacion').select('id_prueba, fecha_inicio, fecha_fin, tpruebas(nombre, tipo_respuesta, logica_calculo, tipo_informe)').eq('id_grupo', idGrupo).eq('estado', 'aprobada').lte('fecha_inicio', today).gte('fecha_fin', today).order('id', { ascending: false }).limit(1); // Originalmente en una línea
     if (!sols?.length) { if ((pendCola || 0) > 0) { renderStudentBlocked("Evaluación en revisión", "Tu institución ya envió una solicitud para aplicar la evaluación a tu grupo. Aún está pendiente de aprobación por el administrador."); return; } renderStudentBlocked("Evaluación no disponible por fechas", "No hay una aplicación de prueba aprobada y vigente para tu grupo hoy."); return; } // Originalmente en una línea
+    
+    const pruebaMetadata = sols[0].tpruebas;
+    tipoRespuesta = pruebaMetadata?.tipo_respuesta || 'likert_1_5';
+    logicaCalculo = pruebaMetadata?.logica_calculo || 'promedio_por_area';
+
     const { data: qData } = await _s.from('tpreguntas').select('*').eq('id_prueba', sols[0].id_prueba).order('num_pregunta', { ascending: true }); // Originalmente en una línea
     if (!qData?.length) { renderStudentBlocked("Contenido no disponible", "La prueba asignada aún no tiene preguntas cargadas."); return; } // Originalmente en una línea
     document.getElementById('pageTitle').innerText = `Mi Prueba Vocacional - ${groupData.tcolegios?.nombre || 'Colegio'}`; // Originalmente en una línea
@@ -350,38 +619,70 @@ async function viewStudent() {
     refreshNotifBadges();
 }
 
-function renderStudentTest() {
-    const q = dynamicQuestions[step];
-    const progress = Math.round((step / dynamicQuestions.length) * 100);
-    let optsHtml = '';
-    
-    for(let i=1; i<=5; i++) {
-        const text = q[`opt${i}`];
-        if(text && text.trim() !== "") {
-            optsHtml += `
+function renderOpciones(pregunta, tipo) {
+    if (tipo === 'si_no') {
+        return `
+            <div class="si-no-container" style="display:flex; gap:15px; margin-top:15px;">
+                <button class="btn-main" style="flex:1; background:${answers[step] === 1 ? 'var(--success)' : 'var(--primary)'}" onclick="setR(1)">Sí</button>
+                <button class="btn-main" style="flex:1; background:${answers[step] === 0 ? 'var(--danger)' : 'var(--primary)'}" onclick="setR(0)">No</button>
+            </div>
+        `;
+    }
+
+    let html = '';
+
+    for (let i = 1; i <= 5; i++) {
+        const text = pregunta[`opt${i}`];
+
+        if (text && text.trim() !== "") {
+            html += `
                 <div class="likert-option">
                     <input type="radio" name="qs" id="o${i}" ${answers[step] === i ? 'checked' : ''} onclick="setR(${i})">
                     <label for="o${i}">${text}</label>
-                </div>`;
+                </div>
+            `;
         }
     }
 
+    return html;
+}
+
+function renderStudentTest() {
+    const q = dynamicQuestions[step];
+    const progress = Math.round((step / dynamicQuestions.length) * 100);
+    const optsHtml = renderOpciones(q, tipoRespuesta);
+
     document.getElementById('dynamicBoard').innerHTML = `
         <div class="span-6 test-container">
-            <div class="progress-container"><div class="progress-bar" style="width: ${progress}%"></div></div>
-            <div class="question-card">
-                <span style="font-weight:700; color:var(--accent);">PREGUNTA ${q.num_pregunta} DE ${dynamicQuestions.length}</span>
-                <h2 style="margin-top:10px;">${q.enunciado}</h2>
-                <div class="likert">${optsHtml}</div>
+            <div class="progress-container">
+                <div class="progress-bar" style="width: ${progress}%"></div>
             </div>
+
+            <div class="question-card">
+                <span style="font-weight:700; color:var(--accent);">
+                    PREGUNTA ${q.num_pregunta} DE ${dynamicQuestions.length}
+                </span>
+
+                <h2 style="margin-top:10px;">${q.enunciado}</h2>
+
+                <div class="likert">
+                    ${optsHtml}
+                </div>
+            </div>
+
             <div style="display:flex; justify-content:space-between; margin-top:20px;">
-                <button class="btn-main" style="width:160px; background:var(--secondary);" onclick="nav(-1)" ${step === 0 ? 'disabled' : ''}>Anterior</button>
-                ${step < dynamicQuestions.length - 1 
+                <button class="btn-main" style="width:160px; background:var(--secondary);" onclick="nav(-1)" ${step === 0 ? 'disabled' : ''}>
+                    Anterior
+                </button>
+
+                ${
+                    step < dynamicQuestions.length - 1 
                     ? `<button class="btn-main" style="width:160px;" onclick="nav(1)">Siguiente</button>`
                     : `<button class="btn-main" style="width:180px; background:var(--success);" onclick="finish()">Finalizar</button>`
                 }
             </div>
-        </div>`;
+        </div>
+    `;
 }
 
 function setR(v) { 
@@ -396,27 +697,103 @@ function nav(d) {
 }
 
 async function finish() {
-    if(answers.includes(null)) return alert("Completa todas las preguntas.");
-    const scores = {}; const maxScores = {}; dynamicQuestions.forEach((q, i) => { const area = q.area; if(!scores[area]) { scores[area] = 0; maxScores[area] = 0; } scores[area] += answers[i]; maxScores[area] += 5; }); const results = {}; Object.keys(scores).forEach(a => results[a] = Math.round((scores[a] / maxScores[a]) * 100)); const { error } = await _s.from('tresultados').insert([{ id_estudiante: sess.id, id_prueba: dynamicQuestions[0].id_prueba, totalpreg: dynamicQuestions.length, respuestas: JSON.stringify(results), estado: 'Finalizado' }]); if(error) alert("Error: " + error.message); else { alert("¡Test Finalizado! Tus respuestas han sido enviadas correctamente."); viewStudent(); }
+    if (answers.includes(null)) return alert("Completa todas las preguntas.");
+
+    const resultadosPorArea = {};
+    dynamicQuestions.forEach((q, index) => {
+        const areaCode = normalizeAreaCode(q.area) || String(q.area).trim();
+        if (!areaCode) return;
+
+        if (!resultadosPorArea[areaCode]) {
+            resultadosPorArea[areaCode] = { suma: 0, total: 0 };
+        }
+
+        const value = Number(answers[index]);
+        if (Number.isFinite(value)) {
+            resultadosPorArea[areaCode].suma += value;
+            resultadosPorArea[areaCode].total += 1;
+        }
+    });
+
+    const escalaMax = tipoRespuesta === 'si_no' ? 1 : 5;
+    const resultadosFinales = {};
+
+    Object.entries(resultadosPorArea).forEach(([areaCode, { suma, total }]) => {
+        if (logicaCalculo === 'conteo') {
+            resultadosFinales[areaCode] = total > 0 ? Math.round((suma / total) * 100) : 0;
+        } else {
+            resultadosFinales[areaCode] = total > 0 ? Math.round((suma / (total * escalaMax)) * 100) : 0;
+        }
+    });
+
+    const payload = {
+        id_estudiante: sess.id,
+        id_prueba: dynamicQuestions[0]?.id_prueba,
+        totalpreg: dynamicQuestions.length,
+        respuestas: JSON.stringify(resultadosFinales),
+        estado: 'Finalizado'
+    };
+
+    const { error } = await _s.from('tresultados').insert([payload]);
+    if (error) alert("Error: " + error.message);
+    else { alert("¡Test Finalizado! Tus respuestas han sido enviadas correctamente."); viewStudent(); }
 }
 
 async function consultarResultado() {
     const { data: colegioData } = await _s.from('tcolegios').select('resultados_habilitados').limit(1).single();
     if (!colegioData?.resultados_habilitados) return alert("Los resultados aún no están disponibles. Serán visibles una vez sean autorizados.");
-    const { data, error } = await _s.from('tresultados').select('*, tpruebas(nombre)').eq('id_estudiante', sess.id).single();
+    const { data, error } = await _s.from('tresultados').select('*, tpruebas(nombre, tipo_respuesta, logica_calculo, tipo_informe)').eq('id_estudiante', sess.id).single();
     if (error || !data) return alert("Aún no has completado la evaluación.");
-    const resultados = JSON.parse(data.respuestas || '{}'); const areas = Object.keys(resultados); const puntuaciones = areas.map(area => resultados[area]); // Originalmente en una línea
-    const maxScore = Math.max(...puntuaciones); const dominant = areas[puntuaciones.indexOf(maxScore)]; const areaInfo = AREAS_VOCACIONALES[dominant]; // Originalmente en una línea
-    const { data: st } = await _s.from('testudiantes').select('*, tcolegios(nombre), tgrados(nombre), tgrupos(nombre), tusuario(identificacion)').eq('id', sess.id).single(); // Originalmente en una línea
-    document.getElementById('dynamicBoard').innerHTML = `
-        <div id="informe-visual" class="span-6">
-            <header><div class="logo"><h2 style="margin:0; color:white; font-size:24px;">Edueficiente</h2></div><div class="titulo-informe"><h1>INFORME DE ORIENTACIÓN VOCACIONAL</h1><p>${st?.tcolegios?.nombre || ''}</p><p style="margin-top:8px; font-size:0.9rem; opacity:0.85;">Fecha del informe: ${new Date().toLocaleDateString('es-ES')}</p></div></header>
-            <section class="info-estudiante" style="display: flex; justify-content: space-between; padding: 20px 40px; background: var(--color-gris-claro); border-bottom: 1px solid #e0e0e0;"><div style="flex: 1;"><p style="margin: 0 0 8px 0;"><strong>Estudiante:</strong> ${st?.nombre || sess.nombre}</p><div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;"><div><p style="margin: 0; font-size: 0.85rem;"><strong>ID:</strong> ${st?.tusuario?.identificacion}</p></div><div><p style="margin: 0; font-size: 0.85rem;"><strong>Grado:</strong> ${st?.tgrados?.nombre}</p></div><div><p style="margin: 0; font-size: 0.85rem;"><strong>Grupo:</strong> ${st?.tgrupos?.nombre}</p></div></div></div><div style="text-align: right;"><p style="margin: 0;"><strong>Prueba aplicada:</strong></p><p style="margin: 0; font-size: 1.1rem; color: var(--primary); font-weight: 600;">${data.tpruebas?.nombre || 'Prueba Vocacional'}</p></div></section>
-            <main><div class="columna-izquierda"><table><thead><tr><th>Área vocacional</th><th>Puntuación</th></tr></thead><tbody>${areas.map((a, i) => `<tr><td>${a}</td><td>${puntuaciones[i]}%</td></tr>`).join('')}</tbody></table><div class="area-dominante"><div class="seccion-titulo">Tu área vocacional dominante:</div><div class="seccion-contenido"><p>Área de mayor interés: <strong>${dominant}</strong></p><p>Puntuación obtenida: <strong>${maxScore}%</strong></p></div></div><div class="descripcion"><div class="seccion-titulo">Descripción:</div><div class="seccion-contenido"><p>${areaInfo ? areaInfo.descripcion : ''}</p></div></div></div><div class="columna-derecha"><div class="grafico-container"><canvas id="radarChart"></canvas></div><div class="carreras-sugeridas"><div class="seccion-titulo">Carreras sugeridas:</div><div class="seccion-contenido"><ul>${areaInfo ? areaInfo.carreras.map(c => `<li>${c}</li>`).join('') : ''}</ul></div></div></div></main>
-            <footer>En EduEficiente creemos que la vocación es el punto de encuentro entre lo que amas y lo que haces bien. Acompañamos a cada estudiante en el descubrimiento de sus fortalezas e intereses, guiándolo hacia un futuro donde pueda crecer con pasión y propósito.</footer>
-        </div>
-        <div style="text-align:center; margin-top:20px;"><button onclick="viewStudent()" class="btn-main" style="width:auto; padding:12px 30px; background:#1E3A5F;">Volver al Panel</button></div>`;
-    const ctx = document.getElementById('radarChart').getContext('2d');
-    new Chart(ctx, { type: 'radar', data: { labels: areas, datasets: [{ data: puntuaciones, fill: true, backgroundColor: 'rgba(30, 58, 95, 0.3)', borderColor: 'rgb(30, 58, 95)' }] }, options: { maintainAspectRatio: false, animation: { duration: 1000, easing: 'easeInOutQuart' }, scales: { r: { suggestedMin: 0, suggestedMax: 100, pointLabels: { font: { size: 12, family: 'Montserrat, sans-serif' } } } }, plugins: { legend: { display: false }, datalabels: { color: '#333', font: { weight: 'bold' }, formatter: (v) => v + '%' } } } });
-    refreshNotifBadges();
+
+    const resultados = JSON.parse(data.respuestas || '{}');
+    const areas = Object.keys(resultados);
+    const puntuaciones = areas.map(area => resultados[area]);
+
+    const { data: st } = await _s.from('testudiantes').select('*, tcolegios(nombre, ciudad, tdepartamentos(nombre)), tgrados(nombre), tgrupos(nombre), tusuario(identificacion)').eq('id', sess.id).single();
+
+    tipoRespuesta = data.tpruebas?.tipo_respuesta || tipoRespuesta;
+    logicaCalculo = data.tpruebas?.logica_calculo || logicaCalculo;
+
+    const reportContext = await buildReportContext(resultados);
+
+    const colegioNombre = st?.tcolegios?.nombre || 'No especificado';
+    const departamentoNombre = st?.tcolegios?.tdepartamentos?.nombre || 'No especificado';
+    const fechaActual = new Date().toLocaleDateString('es-ES');
+
+    const datosParaInforme = {
+        st,
+        data,
+        pruebaConfig: data.tpruebas,
+        resultados,
+        areas,
+        puntuaciones,
+        colegioNombre,
+        departamentoNombre,
+        fechaActual,
+        ...reportContext
+    };
+
+    await renderInforme(datosParaInforme, () => viewStudent());
+}
+
+function escapeHtml(value) {
+    const text = value == null ? '' : String(value);
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function renderTemplate(template, data) {
+    return template
+        .replace(/{{{\s*([\w.]+)\s*}}}/g, (_, path) => {
+            const val = getNestedValue(data, path);
+            return val == null ? '' : String(val);
+        })
+        .replace(/{{\s*([\w.]+)\s*}}/g, (_, path) => {
+            const val = getNestedValue(data, path);
+            return escapeHtml(val);
+        });
 }

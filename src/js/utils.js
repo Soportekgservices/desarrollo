@@ -4,27 +4,57 @@
 const AREAS_VOCACIONALES = {
     "Administrativas y Contables": {
         descripcion: "Te interesan la gestión, organización y los negocios. Tienes habilidades para la administración empresarial, análisis de datos financieros y liderazgo estratégico. Disfrutas trabajando en contextos empresariales y tomando decisiones basadas en información cuantitativa.",
-        carreras: ["Contaduría", "Administración de Empresas", "Mercadeo", "Finanzas", "Economía", "Comercio Internacional", "Gestión de Recursos Humanos"]
+        carreras: ["Contaduría", "Administración de Empresas", "Mercadeo", "Finanzas", "Economía", "Comercio Internacional", "Gestión de Recursos Humanos"],
+        intereses: "Gestión, organización y negocios.",
+        habilidades: "Análisis financiero y liderazgo.",
+        fortalezas: "Toma de decisiones basada en datos.",
+        a_desarrollar: "Pensamiento creativo disruptivo.",
+        sector_laboral: "Banca, consultoría y PyMEs."
     },
     "Artes y Creatividad": {
         descripcion: "Tienes un perfil creativo y artístico con capacidad de expresarte a través de diferentes medios visuales, auditivos o corporales. Disfrutas diseñando, creando soluciones innovadoras y comunicando ideas de forma original. Te destacas en ambientes que valoren la expresión personal y la innovación.",
-        carreras: ["Diseño Gráfico", "Arquitectura", "Artes Plásticas", "Comunicación Social", "Música", "Diseño Industrial", "Cinematografía y Audiovisuales"]
+        carreras: ["Diseño Gráfico", "Arquitectura", "Artes Plásticas", "Comunicación Social", "Música", "Diseño Industrial", "Cinematografía y Audiovisuales"],
+        intereses: "Expresión visual y auditiva.",
+        habilidades: "Creatividad y diseño original.",
+        fortalezas: "Innovación y comunicación estética.",
+        a_desarrollar: "Gestión administrativa de proyectos.",
+        sector_laboral: "Agencias, estudios de arquitectura y medios."
     },
     "Ciencias de la Salud": {
         descripcion: "Te apasionan las ciencias naturales, la investigación científica y el cuidado de la salud. Disfrutas resolviendo problemas mediante el método científico y aplicando conocimientos exactos. Tu vocación está dirigida a mejorar la calidad de vida de las personas.",
-        carreras: ["Medicina", "Enfermería", "Fisioterapia", "Odontología", "Psicología", "Biología", "Farmacia"]
+        carreras: ["Medicina", "Enfermería", "Fisioterapia", "Odontología", "Psicología", "Biología", "Farmacia"],
+        intereses: "Cuidado de la vida y ciencia aplicada.",
+        habilidades: "Empatía y precisión científica.",
+        fortalezas: "Resolución de problemas complejos.",
+        a_desarrollar: "Manejo de estrés en entornos críticos.",
+        sector_laboral: "Hospitales, centros de investigación y laboratorios."
     },
     "Defensa y Seguridad": {
         descripcion: "Te interesa proteger, servir y mantener el orden social. Tienes disposición para trabajar en ambientes estructurados con protocolos claros y objetivos colectivos. Tu vocación se orienta hacia carreras que requieren disciplina, responsabilidad y compromiso con la comunidad.",
-        carreras: ["Fuerzas Militares", "Policía Nacional", "Bomberos", "Seguridad y Salud en el Trabajo", "Administración de Defensa", "Tecnologías de Seguridad"]
+        carreras: ["Fuerzas Militares", "Policía Nacional", "Bomberos", "Seguridad y Salud en el Trabajo", "Administración de Defensa", "Tecnologías de Seguridad"],
+        intereses: "Servicio a la comunidad y orden social.",
+        habilidades: "Disciplina y trabajo bajo protocolo.",
+        fortalezas: "Responsabilidad y compromiso ético.",
+        a_desarrollar: "Flexibilidad ante cambios no estructurados.",
+        sector_laboral: "Instituciones públicas y seguridad corporativa."
     },
     "Humanidades y Ciencias Sociales": {
         descripcion: "Te apasiona comprender el comportamiento humano, la sociedad y las cuestiones legales. Disfrutas del análisis crítico, el debate de ideas y la defensa de causas justas. Tu interés se centra en cómo funcionan las sociedades y cómo mejorarlas.",
-        carreras: ["Derecho", "Ciencia Política", "Trabajo Social", "Sociología", "Antropología", "Filosofía", "Historia"]
+        carreras: ["Derecho", "Ciencia Política", "Trabajo Social", "Sociología", "Antropología", "Filosofía", "Historia"],
+        intereses: "Justicia social y comportamiento humano.",
+        habilidades: "Análisis crítico y debate.",
+        fortalezas: "Comunicación asertiva y empatía social.",
+        a_desarrollar: "Competencias digitales avanzadas.",
+        sector_laboral: "ONGs, entidades gubernamentales y justicia."
     },
     "Ingenierías y Computación": {
         descripcion: "Te fascina el diseño, la construcción y la tecnología. Disfrutas resolviendo problemas técnicos complejos y creando soluciones innovadoras. Tu pensamiento lógico y analítico te permite sobresalir en campos que requieren precisión y creatividad tecnológica.",
-        carreras: ["Ingeniería Civil", "Ingeniería de Sistemas", "Ingeniería Industrial", "Ingeniería Biomédica", "Tecnologías de la Información", "Ingeniería Mecánica", "Electrónica"]
+        carreras: ["Ingeniería Civil", "Ingeniería de Sistemas", "Ingeniería Industrial", "Ingeniería Biomédica", "Tecnologías de la Información", "Ingeniería Mecánica", "Electrónica"],
+        intereses: "Tecnología, construcción e innovación.",
+        habilidades: "Pensamiento lógico y resolución técnica.",
+        fortalezas: "Precisión y diseño de sistemas.",
+        a_desarrollar: "Habilidades de comunicación interpersonal.",
+        sector_laboral: "Industria tecnológica, construcción y software."
     }
 };
 
