@@ -1,0 +1,2209 @@
+type,entity,detail,info,extra
+COLUMN,tareas_vocacionales,fortalezas,text YES,null
+COLUMN,tareas_vocacionales,sector_laboral,text YES,null
+COLUMN,tareas_vocacionales,carreras,jsonb YES,'[]'::jsonb
+COLUMN,tareas_vocacionales,created_at,timestamp with time zone YES,now()
+COLUMN,tareas_vocacionales,intereses,text YES,null
+COLUMN,tareas_vocacionales,habilidades,text YES,null
+COLUMN,tareas_vocacionales,a_desarrollar,text YES,null
+COLUMN,tareas_vocacionales,id_prueba,bigint YES,null
+COLUMN,tareas_vocacionales,id,bigint NO,null
+COLUMN,tareas_vocacionales,codigo_area,character NO,null
+COLUMN,tareas_vocacionales,nombre_area,text NO,null
+COLUMN,tareas_vocacionales,descripcion,text YES,null
+COLUMN,tauditoria_facturacion,accion,character varying NO,null
+COLUMN,tauditoria_facturacion,timestamp,timestamp with time zone YES,now()
+COLUMN,tauditoria_facturacion,id,bigint NO,nextval('tauditoria_facturacion_id_seq'::regclass)
+COLUMN,tauditoria_facturacion,id_solicitud,bigint NO,null
+COLUMN,tauditoria_facturacion,resultado,text YES,null
+COLUMN,tauditoria_operativa,id_entidad,text YES,null
+COLUMN,tauditoria_operativa,tabla_afectada,text NO,null
+COLUMN,tauditoria_operativa,accion,text NO,null
+COLUMN,tauditoria_operativa,fecha,timestamp with time zone YES,now()
+COLUMN,tauditoria_operativa,id_usuario_accion,uuid NO,null
+COLUMN,tauditoria_operativa,id,bigint NO,nextval('tauditoria_operativa_id_seq'::regclass)
+COLUMN,tcolegios,updated_at,timestamp with time zone YES,now()
+COLUMN,tcolegios,id_departamento,integer YES,null
+COLUMN,tcolegios,id_rector,uuid YES,null
+COLUMN,tcolegios,direccion,character varying YES,null
+COLUMN,tcolegios,telefono,text YES,null
+COLUMN,tcolegios,id,integer NO,nextval('tcolegios_id_seq'::regclass)
+COLUMN,tcolegios,id_dist,uuid YES,null
+COLUMN,tcolegios,nombre,character varying YES,null
+COLUMN,tcolegios,ciudad,character varying YES,null
+COLUMN,tcolegios,dane,character varying YES,null
+COLUMN,tcompletados_pruebas,id_resultado,bigint YES,null
+COLUMN,tcompletados_pruebas,created_at,timestamp with time zone YES,now()
+COLUMN,tcompletados_pruebas,timestamp_completado,timestamp with time zone YES,now()
+COLUMN,tcompletados_pruebas,id,bigint NO,nextval('tcompletados_pruebas_id_seq'::regclass)
+COLUMN,tcompletados_pruebas,id_solicitud,bigint NO,null
+COLUMN,tcompletados_pruebas,id_estudiante,uuid NO,null
+COLUMN,tdepartamentos,estado,character varying YES,'Activo'::character varying
+COLUMN,tdepartamentos,nombre,character varying YES,null
+COLUMN,tdepartamentos,id,integer NO,nextval('tdepartamentos_id_seq'::regclass)
+COLUMN,tdistribuidor,nombre,character varying YES,null
+COLUMN,tdistribuidor,num_doc,uuid NO,null
+COLUMN,tdistribuidor,id_departamento,integer YES,null
+COLUMN,tdistribuidor,documento,character varying YES,null
+COLUMN,tdistribuidor,ciudad,character varying YES,null
+COLUMN,tdistribuidor,estado,character varying YES,null
+COLUMN,testudiantes,id,uuid NO,null
+COLUMN,testudiantes,id_colegio,integer NO,null
+COLUMN,testudiantes,fecha_prueba,date YES,null
+COLUMN,testudiantes,id_grado,integer YES,null
+COLUMN,testudiantes,id_grupo,integer YES,null
+COLUMN,testudiantes,puntaje,integer YES,null
+COLUMN,testudiantes,acceso_resultados_hasta,timestamp with time zone YES,null
+COLUMN,testudiantes,updated_at,timestamp with time zone YES,now()
+COLUMN,testudiantes,tipodoc,character varying YES,null
+COLUMN,testudiantes,nombre,character varying YES,null
+COLUMN,testudiantes,estado,character varying YES,null
+COLUMN,tfacturas,descuento_real,numeric YES,null
+COLUMN,tfacturas,impuesto_real,numeric YES,null
+COLUMN,tfacturas,total_real,numeric YES,null
+COLUMN,tfacturas,total_estimado,numeric YES,null
+COLUMN,tfacturas,precio_base_at_emission,numeric YES,0.00
+COLUMN,tfacturas,descuento_porcentaje_at_emission,numeric YES,0.00
+COLUMN,tfacturas,impuesto_porcentaje_at_emission,numeric YES,0.00
+COLUMN,tfacturas,precio_unitario_calculado,numeric YES,null
+COLUMN,tfacturas,subtotal_calculado,numeric NO,0.00
+COLUMN,tfacturas,total,numeric NO,0.00
+COLUMN,tfacturas,impuesto_calculado,numeric YES,0.00
+COLUMN,tfacturas,total_calculado,numeric NO,0.00
+COLUMN,tfacturas,descuento_calculado,numeric YES,0.00
+COLUMN,tfacturas,cantidad_estudiantes,integer YES,null
+COLUMN,tfacturas,pagada,boolean YES,false
+COLUMN,tfacturas,fecha_pago,date YES,null
+COLUMN,tfacturas,created_at,timestamp with time zone YES,now()
+COLUMN,tfacturas,updated_at,timestamp with time zone YES,now()
+COLUMN,tfacturas,cantidad_estudiantes_premarcados,integer YES,null
+COLUMN,tfacturas,cantidad_estudiantes_completaron,integer YES,null
+COLUMN,tfacturas,cantidad_estudiantes_real,integer YES,null
+COLUMN,tfacturas,precio_unitario_real,numeric YES,null
+COLUMN,tfacturas,subtotal_real,numeric YES,null
+COLUMN,tfacturas,id,bigint NO,nextval('tfacturas_id_seq'::regclass)
+COLUMN,tfacturas,id_solicitud_origen,bigint YES,null
+COLUMN,tfacturas,id_colegio,integer NO,null
+COLUMN,tfacturas,id_distribuidor,uuid NO,null
+COLUMN,tfacturas,referencia_pago,character varying YES,null
+COLUMN,tfacturas,notas_admin,text YES,null
+COLUMN,tfacturas,numero_factura,character varying NO,null
+COLUMN,tfacturas,estado,character varying YES,'Emitida'::character varying
+COLUMN,tfacturas,descripcion,text YES,null
+COLUMN,tfacturas,fecha_vencimiento,date YES,null
+COLUMN,tfacturas,subtotal,numeric NO,0.00
+COLUMN,tfacturas,descuento,numeric YES,0.00
+COLUMN,tfacturas,fecha_emision,date NO,CURRENT_DATE
+COLUMN,tfacturas,impuesto,numeric YES,0.00
+COLUMN,tgrados,nombre,character varying YES,null
+COLUMN,tgrados,id,integer NO,nextval('tgrados_id_seq'::regclass)
+COLUMN,tgrados,numero,integer YES,null
+COLUMN,tgrupos,id,integer NO,nextval('tgrupos_id_seq'::regclass)
+COLUMN,tgrupos,id_colegio,integer YES,null
+COLUMN,tgrupos,id_grado,integer YES,null
+COLUMN,tgrupos,nombre,character varying YES,null
+COLUMN,tprecios,estado,character varying YES,'Activo'::character varying
+COLUMN,tprecios,impuesto_porcentaje,numeric YES,0.00
+COLUMN,tprecios,descuento_porcentaje,numeric YES,0.00
+COLUMN,tprecios,precio_por_estudiante,numeric NO,0.00
+COLUMN,tprecios,nombre_configuracion,character varying NO,null
+COLUMN,tprecios,precio_base,numeric NO,0.00
+COLUMN,tprecios,id,bigint NO,nextval('tprecios_id_seq'::regclass)
+COLUMN,tprecios,fecha_vigencia_hasta,date YES,null
+COLUMN,tprecios,created_at,timestamp with time zone YES,now()
+COLUMN,tprecios,updated_at,timestamp with time zone YES,now()
+COLUMN,tprecios,fecha_vigencia_desde,date NO,CURRENT_DATE
+COLUMN,tprecios,descripcion,text YES,null
+COLUMN,tpreguntas,id,integer NO,nextval('tpreguntas_id_seq'::regclass)
+COLUMN,tpreguntas,id_prueba,integer YES,null
+COLUMN,tpreguntas,num_pregunta,integer YES,null
+COLUMN,tpreguntas,created_at,timestamp with time zone YES,"timezone('utc'::text, now())"
+COLUMN,tpreguntas,opt5,text YES,null
+COLUMN,tpreguntas,opt4,text YES,null
+COLUMN,tpreguntas,opt3,text YES,null
+COLUMN,tpreguntas,opt2,text YES,null
+COLUMN,tpreguntas,opt1,text YES,null
+COLUMN,tpreguntas,enunciado,text YES,null
+COLUMN,tpreguntas,area,character varying YES,null
+COLUMN,tpruebas,tipo_respuesta,text YES,'likert_1_5'::text
+COLUMN,tpruebas,logica_calculo,text YES,'promedio_por_area'::text
+COLUMN,tpruebas,cantpreguntas,integer YES,null
+COLUMN,tpruebas,popup_activo,boolean YES,false
+COLUMN,tpruebas,id,integer NO,nextval('tpruebas_id_seq'::regclass)
+COLUMN,tpruebas,popup_url,text YES,null
+COLUMN,tpruebas,popup_tipo,text YES,'imagen'::text
+COLUMN,tpruebas,nombre,character varying YES,null
+COLUMN,tpruebas,tipo_informe,text YES,null
+COLUMN,tpruebas,estado,character varying YES,'Activo'::character varying
+COLUMN,trector,nombre,character varying YES,null
+COLUMN,trector,id_colegio,integer YES,null
+COLUMN,trector,id,uuid NO,null
+COLUMN,trector,estado,character varying YES,null
+COLUMN,tresultados,created_at,timestamp with time zone YES,now()
+COLUMN,tresultados,id_estudiante,uuid YES,null
+COLUMN,tresultados,estado,character varying YES,null
+COLUMN,tresultados,id_prueba,integer YES,null
+COLUMN,tresultados,resultados_areas,jsonb YES,null
+COLUMN,tresultados,totalpreg,integer YES,null
+COLUMN,tresultados,respuestas,text YES,null
+COLUMN,tresultados,respuestas_raw,jsonb YES,null
+COLUMN,tresultados,id,integer NO,nextval('tresultados_id_seq'::regclass)
+COLUMN,tsolicitudes_aplicacion,id_grado,bigint NO,null
+COLUMN,tsolicitudes_aplicacion,id_admin_respuesta,uuid YES,null
+COLUMN,tsolicitudes_aplicacion,created_at,timestamp with time zone NO,now()
+COLUMN,tsolicitudes_aplicacion,resultados_habilitados,boolean YES,false
+COLUMN,tsolicitudes_aplicacion,resultados_fecha_inicio,date YES,null
+COLUMN,tsolicitudes_aplicacion,id,bigint NO,null
+COLUMN,tsolicitudes_aplicacion,estado,text NO,'pendiente'::text
+COLUMN,tsolicitudes_aplicacion,motivo_rechazo,text YES,null
+COLUMN,tsolicitudes_aplicacion,resultados_fecha_fin,date YES,null
+COLUMN,tsolicitudes_aplicacion,id_prueba,bigint NO,null
+COLUMN,tsolicitudes_aplicacion,updated_at,timestamp with time zone YES,now()
+COLUMN,tsolicitudes_aplicacion,id_colegio,bigint NO,null
+COLUMN,tsolicitudes_aplicacion,fecha_inicio,date NO,null
+COLUMN,tsolicitudes_aplicacion,id_grupo,bigint NO,null
+COLUMN,tsolicitudes_aplicacion,fecha_fin,date NO,null
+COLUMN,tusuario,rol,character varying YES,null
+COLUMN,tusuario,nombre,character varying YES,null
+COLUMN,tusuario,updated_at,timestamp with time zone YES,now()
+COLUMN,tusuario,debe_cambiar_password,boolean YES,true
+COLUMN,tusuario,identificacion,text YES,null
+COLUMN,tusuario,estado,character varying YES,'Activo'::character varying
+COLUMN,tusuario,tipodoc,USER-DEFINED YES,null
+COLUMN,tusuario,id,uuid NO,gen_random_uuid()
+COLUMN,tusuario,password_hash,text YES,null
+COLUMN,tvalores,tot_acumpesos,numeric YES,null
+COLUMN,tvalores,tot_estcolegios,integer YES,null
+COLUMN,tvalores,id_colegio,integer NO,null
+COLUMN,tvalores,id_distribuidor,uuid NO,null
+COLUMN,v_facturas_seguimiento_real,descuento_calculado,numeric YES,null
+COLUMN,v_facturas_seguimiento_real,notas_admin,text YES,null
+COLUMN,v_facturas_seguimiento_real,numero_factura,character varying YES,null
+COLUMN,v_facturas_seguimiento_real,precio_unitario_real,numeric YES,null
+COLUMN,v_facturas_seguimiento_real,id_solicitud_origen,bigint YES,null
+COLUMN,v_facturas_seguimiento_real,id_colegio,integer YES,null
+COLUMN,v_facturas_seguimiento_real,cantidad_estudiantes_real,integer YES,null
+COLUMN,v_facturas_seguimiento_real,cantidad_estudiantes_completaron,integer YES,null
+COLUMN,v_facturas_seguimiento_real,id_distribuidor,uuid YES,null
+COLUMN,v_facturas_seguimiento_real,cantidad_estudiantes_premarcados,integer YES,null
+COLUMN,v_facturas_seguimiento_real,updated_at,timestamp with time zone YES,null
+COLUMN,v_facturas_seguimiento_real,created_at,timestamp with time zone YES,null
+COLUMN,v_facturas_seguimiento_real,fecha_pago,date YES,null
+COLUMN,v_facturas_seguimiento_real,pagada,boolean YES,null
+COLUMN,v_facturas_seguimiento_real,cantidad_estudiantes,integer YES,null
+COLUMN,v_facturas_seguimiento_real,total,numeric YES,null
+COLUMN,v_facturas_seguimiento_real,id,bigint YES,null
+COLUMN,v_facturas_seguimiento_real,impuesto,numeric YES,null
+COLUMN,v_facturas_seguimiento_real,descuento,numeric YES,null
+COLUMN,v_facturas_seguimiento_real,descripcion,text YES,null
+COLUMN,v_facturas_seguimiento_real,estado,character varying YES,null
+COLUMN,v_facturas_seguimiento_real,referencia_pago,character varying YES,null
+COLUMN,v_facturas_seguimiento_real,total_real_actualizado,numeric YES,null
+COLUMN,v_facturas_seguimiento_real,estudiantes_completados_real,integer YES,null
+COLUMN,v_facturas_seguimiento_real,total_calculado,numeric YES,null
+COLUMN,v_facturas_seguimiento_real,impuesto_calculado,numeric YES,null
+COLUMN,v_facturas_seguimiento_real,distribuidor_nombre,character varying YES,null
+COLUMN,v_facturas_seguimiento_real,colegio_nombre,character varying YES,null
+COLUMN,v_facturas_seguimiento_real,grado_nombre,character varying YES,null
+COLUMN,v_facturas_seguimiento_real,grupo_nombre,character varying YES,null
+COLUMN,v_facturas_seguimiento_real,subtotal_calculado,numeric YES,null
+COLUMN,v_facturas_seguimiento_real,precio_unitario_calculado,numeric YES,null
+COLUMN,v_facturas_seguimiento_real,subtotal,numeric YES,null
+COLUMN,v_facturas_seguimiento_real,fecha_vencimiento,date YES,null
+COLUMN,v_facturas_seguimiento_real,impuesto_porcentaje_at_emission,numeric YES,null
+COLUMN,v_facturas_seguimiento_real,descuento_porcentaje_at_emission,numeric YES,null
+COLUMN,v_facturas_seguimiento_real,fecha_emision,date YES,null
+COLUMN,v_facturas_seguimiento_real,precio_base_at_emission,numeric YES,null
+COLUMN,v_facturas_seguimiento_real,total_estimado,numeric YES,null
+COLUMN,v_facturas_seguimiento_real,total_real,numeric YES,null
+COLUMN,v_facturas_seguimiento_real,impuesto_real,numeric YES,null
+COLUMN,v_facturas_seguimiento_real,descuento_real,numeric YES,null
+COLUMN,v_facturas_seguimiento_real,subtotal_real,numeric YES,null
+COLUMN,v_perfil_usuario,id,uuid YES,null
+COLUMN,v_perfil_usuario,nombre_institucion,text YES,null
+COLUMN,v_perfil_usuario,debe_cambiar_password,boolean YES,null
+COLUMN,v_perfil_usuario,nombre,character varying YES,null
+COLUMN,v_perfil_usuario,identificacion,text YES,null
+COLUMN,v_perfil_usuario,tipodoc,text YES,null
+COLUMN,v_perfil_usuario,estado,character varying YES,null
+COLUMN,v_perfil_usuario,id_colegio,integer YES,null
+COLUMN,v_perfil_usuario,password_hash,text YES,null
+COLUMN,v_perfil_usuario,rol,character varying YES,null
+FOREIGN_KEY,tareas_vocacionales,id_prueba,REFERENCES tpruebas(id),null
+FOREIGN_KEY,tauditoria_facturacion,id_solicitud,REFERENCES tsolicitudes_aplicacion(id),null
+FOREIGN_KEY,tauditoria_operativa,id_usuario_accion,REFERENCES tusuario(id),null
+FOREIGN_KEY,tcolegios,id_dist,REFERENCES tusuario(id),null
+FOREIGN_KEY,tcolegios,id_rector,REFERENCES tusuario(id),null
+FOREIGN_KEY,tcolegios,id_departamento,REFERENCES tdepartamentos(id),null
+FOREIGN_KEY,tcompletados_pruebas,id_solicitud,REFERENCES tsolicitudes_aplicacion(id),null
+FOREIGN_KEY,tcompletados_pruebas,id_estudiante,REFERENCES testudiantes(id),null
+FOREIGN_KEY,tcompletados_pruebas,id_resultado,REFERENCES tresultados(id),null
+FOREIGN_KEY,tdistribuidor,id_departamento,REFERENCES tdepartamentos(id),null
+FOREIGN_KEY,tdistribuidor,num_doc,REFERENCES tusuario(id),null
+FOREIGN_KEY,testudiantes,id_grado,REFERENCES tgrados(id),null
+FOREIGN_KEY,testudiantes,id_grupo,REFERENCES tgrupos(id),null
+FOREIGN_KEY,testudiantes,id,REFERENCES tusuario(id),null
+FOREIGN_KEY,testudiantes,id_colegio,REFERENCES tcolegios(id),null
+FOREIGN_KEY,tfacturas,id_distribuidor,REFERENCES tusuario(id),null
+FOREIGN_KEY,tfacturas,id_solicitud_origen,REFERENCES tsolicitudes_aplicacion(id),null
+FOREIGN_KEY,tfacturas,id_colegio,REFERENCES tcolegios(id),null
+FOREIGN_KEY,tgrupos,id_grado,REFERENCES tgrados(id),null
+FOREIGN_KEY,tgrupos,id_colegio,REFERENCES tcolegios(id),null
+FOREIGN_KEY,tpreguntas,id_prueba,REFERENCES tpruebas(id),null
+FOREIGN_KEY,trector,id,REFERENCES tusuario(id),null
+FOREIGN_KEY,tresultados,id_prueba,REFERENCES tpruebas(id),null
+FOREIGN_KEY,tresultados,id_estudiante,REFERENCES tusuario(id),null
+FOREIGN_KEY,tsolicitudes_aplicacion,id_grupo,REFERENCES tgrupos(id),null
+FOREIGN_KEY,tsolicitudes_aplicacion,id_colegio,REFERENCES tcolegios(id),null
+FOREIGN_KEY,tsolicitudes_aplicacion,id_prueba,REFERENCES tpruebas(id),null
+FOREIGN_KEY,tsolicitudes_aplicacion,id_grado,REFERENCES tgrados(id),null
+FOREIGN_KEY,tsolicitudes_aplicacion,id_admin_respuesta,REFERENCES tusuario(id),null
+FOREIGN_KEY,tvalores,id_colegio,REFERENCES tcolegios(id),null
+FOREIGN_KEY,tvalores,id_distribuidor,REFERENCES tusuario(id),null
+FUNCTION,actualizar_tvalores_facturacion,"p_id_distribuidor uuid, p_id_colegio integer","CREATE OR REPLACE FUNCTION public.actualizar_tvalores_facturacion(p_id_distribuidor uuid, p_id_colegio integer)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_tot_estudiantes INTEGER;
+    v_tot_acumulado NUMERIC;
+    v_resultado JSONB;
+BEGIN
+    
+    -- 1️⃣ CONTAR ESTUDIANTES ACTIVOS DEL DISTRIBUIDOR EN EL COLEGIO
+    SELECT COUNT(DISTINCT e.id)
+    INTO v_tot_estudiantes
+    FROM public.testudiantes e
+    JOIN public.tcolegios c ON e.id_colegio = c.id
+    WHERE c.id_dist = p_id_distribuidor
+        AND c.id = p_id_colegio
+        AND e.estado = 'Activo';
+    
+    -- 2️⃣ SUMAR TOTAL DE FACTURAS NO CANCELADAS (ingresos pendientes)
+    SELECT COALESCE(SUM(total), 0)
+    INTO v_tot_acumulado
+    FROM public.tfacturas
+    WHERE id_distribuidor = p_id_distribuidor
+        AND id_colegio = p_id_colegio
+        AND pagada = FALSE;
+    
+    -- 3️⃣ UPSERT en tvalores (Insert or Update)
+    INSERT INTO public.tvalores (
+        id_distribuidor,
+        id_colegio,
+        tot_estcolegios,
+        tot_acumpesos
+    )
+    VALUES (
+        p_id_distribuidor,
+        p_id_colegio,
+        v_tot_estudiantes,
+        v_tot_acumulado
+    )
+    ON CONFLICT (id_distribuidor, id_colegio) DO UPDATE SET
+        tot_estcolegios = EXCLUDED.tot_estcolegios,
+        tot_acumpesos = EXCLUDED.tot_acumpesos;
+    
+    v_resultado := jsonb_build_object(
+        'status', 'success',
+        'id_distribuidor', p_id_distribuidor,
+        'id_colegio', p_id_colegio,
+        'estudiantes_activos', v_tot_estudiantes,
+        'ingresos_pendientes', v_tot_acumulado
+    );
+    
+    RETURN v_resultado;
+    
+EXCEPTION WHEN OTHERS THEN
+    RETURN jsonb_build_object(
+        'status', 'error',
+        'message', SQLERRM,
+        'code', SQLSTATE
+    );
+END;
+$function$
+",null
+FUNCTION,crear_usuario_sistema,"p_nombre text, p_identificacion text, p_rol text, p_tipodoc tex","CREATE OR REPLACE FUNCTION public.crear_usuario_sistema(p_nombre text, p_identificacion text, p_rol text, p_tipodoc text, p_password text DEFAULT NULL::text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE new_id uuid;
+BEGIN
+    INSERT INTO public.tusuario (nombre, identificacion, rol, tipodoc, password_hash, estado)
+    VALUES (p_nombre, p_identificacion, p_rol, p_tipodoc::public.tipo_documento_es, p_password, 'Activo')
+    RETURNING id INTO new_id;
+    RETURN jsonb_build_object('status', 'success', 'id', new_id);
+EXCEPTION WHEN OTHERS THEN
+    RETURN jsonb_build_object('status', 'error', 'message', SQLERRM);
+END; $function$
+",null
+FUNCTION,editar_usuario_sistema,"p_usuario_id uuid, p_nombre text, p_identificacion text, p_tipo","CREATE OR REPLACE FUNCTION public.editar_usuario_sistema(p_usuario_id uuid, p_nombre text, p_identificacion text, p_tipodoc text, p_password text DEFAULT NULL::text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+BEGIN
+    UPDATE public.tusuario SET
+        nombre = p_nombre,
+        identificacion = p_identificacion,
+        tipodoc = p_tipodoc::public.tipo_documento_es,
+        password_hash = COALESCE(p_password, password_hash),
+        updated_at = NOW()
+    WHERE id = p_usuario_id;
+    RETURN jsonb_build_object('status', 'success');
+EXCEPTION WHEN OTHERS THEN
+    RETURN jsonb_build_object('status', 'error', 'message', SQLERRM);
+END; $function$
+",null
+FUNCTION,eliminar_entidad_sistema,"p_tabla text, p_id_entidad text, p_solicitante_id uuid","CREATE OR REPLACE FUNCTION public.eliminar_entidad_sistema(p_tabla text, p_id_entidad text, p_solicitante_id uuid)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE v_rol text;
+BEGIN
+    SELECT rol INTO v_rol FROM public.tusuario WHERE id = p_solicitante_id;
+    IF v_rol != 'admin' AND v_rol != 'distribuidor' THEN
+        RETURN jsonb_build_object('status', 'error', 'message', 'No autorizado');
+    END IF;
+
+    IF p_tabla = 'testudiantes' THEN
+        PERFORM public.eliminar_estudiante_completo(p_id_entidad::uuid);
+    ELSIF p_tabla = 'tgrupos' THEN
+        DELETE FROM public.tgrupos WHERE id = p_id_entidad::integer;
+    ELSIF p_tabla = 'tcolegios' AND v_rol = 'admin' THEN
+        DELETE FROM public.tcolegios WHERE id = p_id_entidad::integer;
+    ELSIF p_tabla = 'tpruebas' AND v_rol = 'admin' THEN
+        DELETE FROM public.tpruebas WHERE id = p_id_entidad::integer;
+    ELSIF p_tabla = 'tusuario' AND v_rol = 'admin' THEN
+        DELETE FROM public.tusuario WHERE id = p_id_entidad::uuid;
+    ELSE
+        RETURN jsonb_build_object('status', 'error', 'message', 'Acceso denegado para borrar esta tabla o entidad');
+    END IF;
+
+    RETURN jsonb_build_object('status', 'success');
+END; $function$
+",null
+FUNCTION,eliminar_estudiante_completo,p_estudiante_id uuid,"CREATE OR REPLACE FUNCTION public.eliminar_estudiante_completo(p_estudiante_id uuid)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+BEGIN
+    DELETE FROM public.testudiantes WHERE id = p_estudiante_id;
+    DELETE FROM public.tusuario WHERE id = p_estudiante_id;
+END;
+$function$
+",null
+FUNCTION,establecer_password_usuario,"p_usuario_id text, p_password text","CREATE OR REPLACE FUNCTION public.establecer_password_usuario(p_usuario_id text, p_password text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+BEGIN
+    -- Actualizar contraseña y marcar que no debe cambiar
+    UPDATE public.tusuario
+    SET 
+        password_hash = p_password,
+        debe_cambiar_password = false,
+        updated_at = NOW()
+    WHERE id = p_usuario_id::uuid;
+
+    IF NOT FOUND THEN
+        RETURN jsonb_build_object(
+            'status', 'error',
+            'message', 'Usuario no encontrado.'
+        );
+    END IF;
+
+    RETURN jsonb_build_object(
+        'status', 'success',
+        'message', 'Contraseña establecida correctamente.'
+    );
+END;
+$function$
+",null
+FUNCTION,fn_listar_colegios_distribuidor,p_usuario_id uuid,"CREATE OR REPLACE FUNCTION public.fn_listar_colegios_distribuidor(p_usuario_id uuid)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE v_data jsonb;
+BEGIN
+    SELECT json_agg(t)::jsonb INTO v_data
+    FROM (
+        SELECT id, nombre, dane, ciudad, id_rector, estado 
+        FROM tcolegios WHERE id_dist = p_usuario_id
+    ) t;
+    RETURN jsonb_build_object('status', 'success', 'data', COALESCE(v_data, '[]'::jsonb));
+END; $function$
+",null
+FUNCTION,fn_obtener_colegio_rector,p_rector_id uuid,"CREATE OR REPLACE FUNCTION public.fn_obtener_colegio_rector(p_rector_id uuid)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE v_data jsonb;
+BEGIN
+    SELECT row_to_json(t)::jsonb INTO v_data
+    FROM (
+        SELECT c.id, c.nombre, c.dane, c.ciudad, c.direccion, c.telefono, c.id_departamento,
+        EXISTS(SELECT 1 FROM tsolicitudes_aplicacion WHERE id_colegio = c.id AND estado = 'aprobada' AND resultados_habilitados = true) as resultados_habilitados
+        FROM tcolegios c 
+        WHERE c.id_rector = p_rector_id
+        LIMIT 1
+    ) t;
+    RETURN jsonb_build_object('status', 'success', 'data', v_data);
+END; $function$
+",null
+FUNCTION,fn_obtener_pruebas_rector,p_rector_id uuid,"CREATE OR REPLACE FUNCTION public.fn_obtener_pruebas_rector(p_rector_id uuid)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE v_colegio_id integer; v_data jsonb;
+BEGIN
+    SELECT id INTO v_colegio_id FROM tcolegios WHERE id_rector = p_rector_id LIMIT 1;
+    SELECT json_agg(t)::jsonb INTO v_data FROM (
+        SELECT s.id, s.id_prueba, s.fecha_inicio, s.fecha_fin, s.estado, p.nombre as prueba_nombre,
+               COALESCE(g.nombre, 'General') as grado_nombre, COALESCE(gru.nombre, 'Todos') as grupo_nombre
+        FROM tsolicitudes_aplicacion s
+        JOIN tpruebas p ON s.id_prueba = p.id
+        LEFT JOIN tgrados g ON s.id_grado = g.id
+        LEFT JOIN tgrupos gru ON s.id_grupo = gru.id
+        WHERE s.id_colegio = v_colegio_id AND s.estado = 'aprobada'
+    ) t;
+    RETURN jsonb_build_object('status', 'success', 'data', COALESCE(v_data, '[]'::jsonb));
+END; $function$
+",null
+FUNCTION,gestionar_colegio_sistema,"p_colegio_id integer DEFAULT NULL::integer, p_nombre text DEFAU","CREATE OR REPLACE FUNCTION public.gestionar_colegio_sistema(p_colegio_id integer DEFAULT NULL::integer, p_nombre text DEFAULT NULL::text, p_dane text DEFAULT NULL::text, p_ciudad text DEFAULT NULL::text, p_direccion text DEFAULT NULL::text, p_id_departamento integer DEFAULT NULL::integer, p_telefono text DEFAULT NULL::text, p_id_distribuidor uuid DEFAULT NULL::uuid, p_rector_id uuid DEFAULT NULL::uuid, p_rector_nombre text DEFAULT NULL::text, p_rector_identificacion text DEFAULT NULL::text, p_rector_tipodoc text DEFAULT NULL::text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE v_colegio_id integer := p_colegio_id; v_rector_id uuid := p_rector_id;
+BEGIN
+    -- 1. Manejar Rector si se proporcionan datos
+    IF p_rector_identificacion IS NOT NULL THEN
+        IF v_rector_id IS NULL THEN
+            INSERT INTO public.tusuario (nombre, identificacion, rol, tipodoc, estado)
+            VALUES (p_rector_nombre, p_rector_identificacion, 'rector', p_rector_tipodoc::public.tipo_documento_es, 'Activo')
+            ON CONFLICT (tipodoc, identificacion) DO UPDATE SET nombre = EXCLUDED.nombre
+            RETURNING id INTO v_rector_id;
+        ELSE
+            UPDATE public.tusuario SET nombre = p_rector_nombre, identificacion = p_rector_identificacion, tipodoc = p_rector_tipodoc::public.tipo_documento_es WHERE id = v_rector_id;
+        END IF;
+    END IF;
+
+    -- 2. Insertar o Actualizar Colegio
+    IF v_colegio_id IS NULL THEN
+        INSERT INTO public.tcolegios (nombre, dane, ciudad, direccion, id_departamento, id_dist, telefono, id_rector)
+        VALUES (p_nombre, p_dane, p_ciudad, p_direccion, p_id_departamento, p_id_distribuidor, p_telefono, v_rector_id)
+        RETURNING id INTO v_colegio_id;
+    ELSE
+        UPDATE public.tcolegios SET
+            nombre = COALESCE(p_nombre, nombre), dane = COALESCE(p_dane, dane), ciudad = COALESCE(p_ciudad, ciudad),
+            direccion = COALESCE(p_direccion, direccion), id_departamento = COALESCE(p_id_departamento, id_departamento),
+            telefono = COALESCE(p_telefono, telefono), id_rector = COALESCE(v_rector_id, id_rector), updated_at = NOW()
+        WHERE id = v_colegio_id;
+    END IF;
+    RETURN jsonb_build_object('status', 'success', 'id', v_colegio_id);
+END; $function$
+",null
+FUNCTION,gestionar_pregunta_sistema,"p_id integer, p_area text, p_enunciado text, p_opt1 text, p_opt","CREATE OR REPLACE FUNCTION public.gestionar_pregunta_sistema(p_id integer, p_area text, p_enunciado text, p_opt1 text, p_opt2 text, p_opt3 text, p_opt4 text, p_opt5 text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+BEGIN
+    UPDATE public.tpreguntas SET 
+        area = p_area, 
+        enunciado = p_enunciado, 
+        opt1 = p_opt1, 
+        opt2 = p_opt2, 
+        opt3 = p_opt3, 
+        opt4 = p_opt4, 
+        opt5 = p_opt5,
+        created_at = NOW()
+    WHERE id = p_id;
+    
+    RETURN jsonb_build_object('status', 'success');
+EXCEPTION WHEN OTHERS THEN
+    RETURN jsonb_build_object('status', 'error', 'message', SQLERRM);
+END; $function$
+",null
+FUNCTION,gestionar_pregunta_sistema,"p_id integer, p_usuario_id uuid, p_area text, p_enunciado text,","CREATE OR REPLACE FUNCTION public.gestionar_pregunta_sistema(p_id integer, p_usuario_id uuid, p_area text, p_enunciado text, p_opt1 text, p_opt2 text, p_opt3 text, p_opt4 text, p_opt5 text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE v_rol text;
+BEGIN
+    -- Validación de Seguridad interna
+    SELECT rol INTO v_rol FROM public.tusuario WHERE id = p_usuario_id;
+    IF v_rol != 'admin' THEN
+        RETURN jsonb_build_object('status', 'error', 'message', 'Acceso denegado: Se requiere rol de administrador.');
+    END IF;
+
+    UPDATE public.tpreguntas SET 
+        area = p_area, 
+        enunciado = p_enunciado, 
+        opt1 = p_opt1, 
+        opt2 = p_opt2, 
+        opt3 = p_opt3, 
+        opt4 = p_opt4, 
+        opt5 = p_opt5
+    WHERE id = p_id;
+    
+    RETURN jsonb_build_object('status', 'success');
+END; $function$
+",null
+FUNCTION,gestionar_prorroga_estudiante_segura,"p_estudiante_id text, p_fecha_limite text, p_usuario_id text","CREATE OR REPLACE FUNCTION public.gestionar_prorroga_estudiante_segura(p_estudiante_id text, p_fecha_limite text, p_usuario_id text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE v_rol text; v_id_dist_colegio uuid; v_id_colegio_estudiante integer;
+BEGIN
+    SELECT rol INTO v_rol FROM public.tusuario WHERE id = p_usuario_id::uuid;
+    IF v_rol = 'distribuidor' THEN
+        SELECT id_colegio INTO v_id_colegio_estudiante FROM public.testudiantes WHERE id = p_estudiante_id::uuid;
+        SELECT id_dist INTO v_id_dist_colegio FROM public.tcolegios WHERE id = v_id_colegio_estudiante;
+        IF v_id_dist_colegio IS NULL OR v_id_dist_colegio != p_usuario_id::uuid THEN
+            RETURN jsonb_build_object('status', 'error', 'message', 'Acceso denegado: No es el distribuidor de este colegio.');
+        END IF;
+    ELSIF v_rol != 'admin' THEN
+        RETURN jsonb_build_object('status', 'error', 'message', 'Acceso denegado: Solo administradores o distribuidores pueden dar prórrogas.');
+    END IF;
+    UPDATE public.testudiantes SET acceso_resultados_hasta = p_fecha_limite::timestamp with time zone, updated_at = NOW() WHERE id = p_estudiante_id::uuid;
+    RETURN jsonb_build_object('status', 'success');
+END; $function$
+",null
+FUNCTION,gestionar_prueba_sistema,"p_id integer, p_nombre text, p_tipo_respuesta text, p_logica_ca","CREATE OR REPLACE FUNCTION public.gestionar_prueba_sistema(p_id integer, p_nombre text, p_tipo_respuesta text, p_logica_calculo text, p_tipo_informe text, p_popup_activo boolean, p_popup_tipo text, p_popup_url text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+BEGIN
+    IF p_id IS NULL THEN
+        INSERT INTO public.tpruebas (nombre, tipo_respuesta, logica_calculo, tipo_informe, popup_activo, popup_tipo, popup_url)
+        VALUES (p_nombre, p_tipo_respuesta, p_logica_calculo, p_tipo_informe, p_popup_activo, p_popup_tipo, p_popup_url);
+    ELSE
+        UPDATE public.tpruebas SET 
+            nombre = p_nombre, tipo_respuesta = p_tipo_respuesta, logica_calculo = p_logica_calculo,
+            tipo_informe = p_tipo_informe, popup_activo = p_popup_activo, popup_tipo = p_popup_tipo, popup_url = p_popup_url
+        WHERE id = p_id;
+    END IF;
+    RETURN jsonb_build_object('status', 'success');
+END; $function$
+",null
+FUNCTION,gestionar_solicitud_aplicacion_segura,"p_solicitud_id bigint, p_estado text, p_admin_id uuid, p_motivo","CREATE OR REPLACE FUNCTION public.gestionar_solicitud_aplicacion_segura(p_solicitud_id bigint, p_estado text, p_admin_id uuid, p_motivo_rechazo text DEFAULT NULL::text, p_fecha_inicio date DEFAULT NULL::date, p_fecha_fin date DEFAULT NULL::date)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_rol text;
+BEGIN
+    -- 1. Validar que el usuario que intenta realizar la acción existe y es ADMIN
+    SELECT rol INTO v_rol FROM public.tusuario WHERE id = p_admin_id;
+
+    IF v_rol != 'admin' THEN
+        RETURN jsonb_build_object(
+            'status', 'error', 
+            'message', 'No autorizado: Solo el administrador puede gestionar solicitudes de forma global.'
+        );
+    END IF;
+
+    -- 2. Realizar la actualización
+    -- COALESCE asegura que si no enviamos las fechas (en aprobación rápida), se mantengan las que ya tiene el registro
+    UPDATE public.tsolicitudes_aplicacion
+    SET
+        estado = p_estado,
+        motivo_rechazo = p_motivo_rechazo,
+        fecha_inicio = COALESCE(p_fecha_inicio, fecha_inicio),
+        fecha_fin = COALESCE(p_fecha_fin, fecha_fin),
+        id_admin_respuesta = p_admin_id,
+        updated_at = NOW()
+    WHERE id = p_solicitud_id;
+
+    IF NOT FOUND THEN
+        RETURN jsonb_build_object('status', 'error', 'message', 'La solicitud #' || p_solicitud_id || ' no existe.');
+    END IF;
+
+    -- 3. Respuesta exitosa
+    RETURN jsonb_build_object(
+        'status', 'success', 
+        'message', 'Solicitud actualizada correctamente.',
+        'id', p_solicitud_id
+    );
+
+EXCEPTION WHEN OTHERS THEN
+    RETURN jsonb_build_object(
+        'status', 'error',
+        'message', SQLERRM
+    );
+END;
+$function$
+",null
+FUNCTION,gestionar_visibilidad_resultados_segura,"p_solicitud_id text, p_habilitado boolean, p_fecha_inicio date,","CREATE OR REPLACE FUNCTION public.gestionar_visibilidad_resultados_segura(p_solicitud_id text, p_habilitado boolean, p_fecha_inicio date, p_fecha_fin date, p_usuario_id text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE v_rol text; v_id_dist_colegio uuid;
+BEGIN
+    SELECT rol INTO v_rol FROM public.tusuario WHERE id = p_usuario_id::uuid;
+    IF v_rol = 'distribuidor' THEN
+        SELECT id_dist INTO v_id_dist_colegio FROM public.tcolegios c JOIN public.tsolicitudes_aplicacion s ON c.id = s.id_colegio WHERE s.id = p_solicitud_id::bigint;
+        IF v_id_dist_colegio IS NULL OR v_id_dist_colegio != p_usuario_id::uuid THEN
+            RETURN jsonb_build_object('status', 'error', 'message', 'Acceso denegado: No es el distribuidor de este colegio.');
+        END IF;
+    ELSIF v_rol != 'admin' THEN
+        RETURN jsonb_build_object('status', 'error', 'message', 'Acceso denegado: Solo administradores o distribuidores pueden gestionar la visibilidad.');
+    END IF;
+    UPDATE public.tsolicitudes_aplicacion
+    SET resultados_habilitados = p_habilitado, resultados_fecha_inicio = p_fecha_inicio, resultados_fecha_fin = p_fecha_fin, updated_at = NOW()
+    WHERE id = p_solicitud_id::bigint;
+    RETURN jsonb_build_object('status', 'success');
+END; $function$
+",null
+FUNCTION,guardar_progreso_estudiante_seguro,"p_estudiante_id text, p_prueba_id bigint, p_total_preg integer,","CREATE OR REPLACE FUNCTION public.guardar_progreso_estudiante_seguro(p_estudiante_id text, p_prueba_id bigint, p_total_preg integer, p_respuestas text, p_respuestas_raw text, p_estado text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_id integer;
+BEGIN
+    INSERT INTO public.tresultados (
+        id_estudiante,
+        id_prueba,
+        totalpreg,
+        respuestas,
+        respuestas_raw,
+        estado
+    )
+    VALUES (
+        p_estudiante_id::uuid,
+        p_prueba_id::integer,   -- Casteo interno a integer para la columna de la tabla
+        p_total_preg,
+        p_respuestas,
+        p_respuestas_raw::jsonb,
+        p_estado
+    )
+    ON CONFLICT (id_estudiante, id_prueba) DO UPDATE SET
+        totalpreg      = EXCLUDED.totalpreg,
+        respuestas     = EXCLUDED.respuestas,
+        respuestas_raw = EXCLUDED.respuestas_raw,
+        estado         = EXCLUDED.estado,
+        created_at     = NOW()
+    RETURNING id INTO v_id;
+
+    RETURN jsonb_build_object('status', 'success', 'id', v_id);
+EXCEPTION WHEN OTHERS THEN
+    RETURN jsonb_build_object('status', 'error', 'message', SQLERRM);
+END;
+$function$
+",null
+FUNCTION,handle_new_distributor,,"CREATE OR REPLACE FUNCTION public.handle_new_distributor()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+    IF NEW.rol = 'distribuidor' THEN
+        -- Insertamos en tdistribuidor usando el nuevo campo 'num_doc' (UUID)
+        INSERT INTO public.tdistribuidor (num_doc, nombre, estado) 
+        VALUES (NEW.id, NEW.nombre, 'Activo');
+    END IF;
+    RETURN NEW;
+END;
+$function$
+",null
+FUNCTION,importar_estudiantes_inteligente,"p_estudiantes jsonb, p_colegio_id integer","CREATE OR REPLACE FUNCTION public.importar_estudiantes_inteligente(p_estudiantes jsonb, p_colegio_id integer)
+ RETURNS json
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    r jsonb; -- CAMBIO CLAVE: Declarado como jsonb para permitir el uso de ->>
+    v_procesados integer := 0;
+    v_user_id uuid;
+    v_grado_id integer;
+    v_grupo_id integer;
+    v_tipodoc_limpio text;
+BEGIN
+    -- Iteramos obteniendo los elementos jsonb directamente
+    FOR r IN SELECT jsonb_array_elements(p_estudiantes)
+    LOOP
+        -- 1. Limpieza y Normalización del Tipo de Documento
+        v_tipodoc_limpio := UPPER(REPLACE(COALESCE(r->>'tipodoc', ''), '.', ''));
+        IF v_tipodoc_limpio = 'CC' THEN v_tipodoc_limpio := 'C.C'; END IF;
+        IF v_tipodoc_limpio = 'CE' THEN v_tipodoc_limpio := 'C.E'; END IF;
+
+        -- 2. Validación Estricta: Omitir si faltan datos esenciales o el tipodoc no es válido
+        IF (r->>'nombre' IS NULL OR r->>'identificacion' IS NULL OR v_tipodoc_limpio NOT IN ('C.C', 'TI', 'C.E', 'EXT', 'PPT')) THEN
+            CONTINUE;
+        END IF;
+
+        -- 3. Asegurar Grado (Busca o crea)
+        SELECT id INTO v_grado_id FROM public.tgrados WHERE nombre = (r->>'grado') LIMIT 1;
+        IF NOT FOUND THEN
+            INSERT INTO public.tgrados (nombre, numero) 
+            VALUES (r->>'grado', CASE WHEN (r->>'grado') ~ '^[0-9]+$' THEN (r->>'grado')::integer ELSE 0 END) 
+            RETURNING id INTO v_grado_id;
+        END IF;
+
+        -- 4. Asegurar Grupo (Busca o crea dentro del colegio)
+        SELECT id INTO v_grupo_id FROM public.tgrupos 
+        WHERE nombre = (r->>'grupo') AND id_colegio = p_colegio_id AND id_grado = v_grado_id 
+        LIMIT 1;
+        
+        IF NOT FOUND THEN
+            INSERT INTO public.tgrupos (nombre, id_grado, id_colegio) 
+            VALUES (r->>'grupo', v_grado_id, p_colegio_id) 
+            RETURNING id INTO v_grupo_id;
+        END IF;
+
+        -- 5. Sincronización en TUSUARIO (Identidad raíz)
+        INSERT INTO public.tusuario (nombre, identificacion, tipodoc, rol, estado)
+        VALUES (
+            r->>'nombre',
+            r->>'identificacion',
+            v_tipodoc_limpio::tipo_documento_es,
+            'estudiante',
+            'Activo'
+        )
+        ON CONFLICT (identificacion, tipodoc) DO UPDATE 
+        SET nombre = EXCLUDED.nombre
+        RETURNING id INTO v_user_id;
+
+        -- 6. Sincronización en TESTUDIANTES (Ficha académica)
+        INSERT INTO public.testudiantes (id, nombre, tipodoc, id_colegio, id_grado, id_grupo, estado)
+        VALUES (
+            v_user_id,
+            r->>'nombre',
+            v_tipodoc_limpio,
+            p_colegio_id,
+            v_grado_id,
+            v_grupo_id,
+            'Activo'
+        )
+        ON CONFLICT (id) DO UPDATE 
+        SET nombre = EXCLUDED.nombre,
+            tipodoc = EXCLUDED.tipodoc,
+            id_grado = EXCLUDED.id_grado,
+            id_grupo = EXCLUDED.id_grupo,
+            id_colegio = EXCLUDED.id_colegio;
+
+        v_procesados := v_procesados + 1;
+    END LOOP;
+
+    RETURN json_build_object('procesados', v_procesados);
+END;
+$function$
+",null
+FUNCTION,importar_preguntas_sistema,"p_prueba_id integer, p_preguntas jsonb, p_usuario_id uuid","CREATE OR REPLACE FUNCTION public.importar_preguntas_sistema(p_prueba_id integer, p_preguntas jsonb, p_usuario_id uuid)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE v_rol text;
+BEGIN
+    SELECT rol INTO v_rol FROM public.tusuario WHERE id = p_usuario_id;
+    IF v_rol != 'admin' THEN
+        RETURN jsonb_build_object('status', 'error', 'message', 'No autorizado');
+    END IF;
+
+    -- Limpiar preguntas previas para evitar desorden en el re-ordenamiento
+    DELETE FROM public.tpreguntas WHERE id_prueba = p_prueba_id;
+    
+    INSERT INTO public.tpreguntas (id_prueba, num_pregunta, area, enunciado, opt1, opt2, opt3, opt4, opt5)
+    SELECT 
+        p_prueba_id,
+        (elem->>'num_pregunta')::integer,
+        (elem->>'area'),
+        (elem->>'enunciado'),
+        (elem->>'opt1'),
+        (elem->>'opt2'),
+        (elem->>'opt3'),
+        (elem->>'opt4'),
+        (elem->>'opt5')
+    FROM jsonb_array_elements(p_preguntas) AS elem;
+
+    RETURN jsonb_build_object('status', 'success');
+END; $function$
+",null
+FUNCTION,obtener_auditoria_facturacion_segura,"p_admin_id text, p_accion text DEFAULT NULL::text, p_desde time","CREATE OR REPLACE FUNCTION public.obtener_auditoria_facturacion_segura(p_admin_id text, p_accion text DEFAULT NULL::text, p_desde timestamp with time zone DEFAULT NULL::timestamp with time zone, p_hasta timestamp with time zone DEFAULT NULL::timestamp with time zone)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+BEGIN
+    RETURN jsonb_build_object('status', 'success', 'data', (
+        SELECT jsonb_agg(a) FROM (
+            SELECT * FROM public.tauditoria_facturacion
+            WHERE (p_accion IS NULL OR accion = p_accion)
+              AND (p_desde IS NULL OR timestamp >= p_desde)
+              AND (p_hasta IS NULL OR timestamp <= p_hasta)
+            ORDER BY timestamp DESC
+        ) a
+    ));
+END; $function$
+",null
+FUNCTION,obtener_conteos_notificaciones_seguro,"p_usuario_id text, p_rol text, p_seen_timestamp text DEFAULT '1","CREATE OR REPLACE FUNCTION public.obtener_conteos_notificaciones_seguro(p_usuario_id text, p_rol text, p_seen_timestamp text DEFAULT '1970-01-01T00:00:00.000Z'::text, p_hoy text DEFAULT NULL::text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_uid        uuid        := p_usuario_id::uuid;
+    v_hoy        date        := COALESCE(p_hoy::date, CURRENT_DATE);
+    v_seen       timestamptz := p_seen_timestamp::timestamptz;
+    v_pend_sol   integer     := 0;
+    v_unread_sol integer     := 0;
+    v_pend_dist  integer     := 0;
+    v_pend_grupo integer     := 0;
+    v_can_take   integer     := 0;
+    v_id_grupo   integer;
+BEGIN
+    IF p_rol = 'admin' THEN
+        SELECT COUNT(*) INTO v_pend_sol
+        FROM public.tsolicitudes_aplicacion
+        WHERE estado = 'pendiente';
+
+        SELECT COUNT(*) INTO v_unread_sol
+        FROM public.tsolicitudes_aplicacion
+        WHERE estado = 'pendiente'
+          AND created_at > v_seen;
+
+    ELSIF p_rol = 'distribuidor' THEN
+        SELECT COUNT(*) INTO v_pend_dist
+        FROM public.tsolicitudes_aplicacion sa
+        JOIN public.tcolegios c ON c.id = sa.id_colegio
+        WHERE c.id_dist = v_uid
+          AND sa.estado = 'pendiente';
+
+    ELSIF p_rol = 'estudiante' THEN
+        SELECT id_grupo INTO v_id_grupo
+        FROM public.testudiantes
+        WHERE id = v_uid;
+
+        IF v_id_grupo IS NOT NULL THEN
+            SELECT COUNT(*) INTO v_pend_grupo
+            FROM public.tsolicitudes_aplicacion
+            WHERE id_grupo = v_id_grupo
+              AND estado   = 'pendiente';
+
+            SELECT COUNT(*) INTO v_can_take
+            FROM public.tsolicitudes_aplicacion
+            WHERE id_grupo    = v_id_grupo
+              AND estado       = 'aprobada'
+              AND fecha_inicio <= v_hoy
+              AND fecha_fin    >= v_hoy;
+        END IF;
+    END IF;
+
+    RETURN jsonb_build_object(
+        'status', 'success',
+        'data', jsonb_build_object(
+            'pend_sol',   v_pend_sol,
+            'unread_sol', v_unread_sol,
+            'pend_dist',  v_pend_dist,
+            'pend_grupo', v_pend_grupo,
+            'can_take',   v_can_take
+        )
+    );
+EXCEPTION WHEN OTHERS THEN
+    RETURN jsonb_build_object('status', 'error', 'message', SQLERRM);
+END;
+$function$
+",null
+FUNCTION,obtener_datos_estudiante_seguro,"p_estudiante_id uuid, p_solicitante_id uuid DEFAULT NULL::uuid","CREATE OR REPLACE FUNCTION public.obtener_datos_estudiante_seguro(p_estudiante_id uuid, p_solicitante_id uuid DEFAULT NULL::uuid)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE v_data jsonb;
+BEGIN
+    SELECT row_to_json(t)::jsonb INTO v_data FROM (
+        SELECT e.*, u.nombre, u.identificacion, u.tipodoc, c.nombre as colegio_nombre, g.nombre as grado_nombre, gr.nombre as grupo_nombre, d.nombre as departamento_nombre
+        FROM testudiantes e
+        JOIN tusuario u ON e.id = u.id
+        LEFT JOIN tcolegios c ON e.id_colegio = c.id
+        LEFT JOIN tgrados g ON e.id_grado = g.id
+        LEFT JOIN tgrupos gr ON e.id_grupo = gr.id
+        LEFT JOIN tdepartamentos d ON c.id_departamento = d.id
+        WHERE e.id = p_estudiante_id
+    ) t;
+    IF v_data IS NULL THEN RETURN jsonb_build_object('status', 'error', 'message', 'No encontrado'); END IF;
+    RETURN jsonb_build_object('status', 'success', 'data', v_data);
+END; $function$
+",null
+FUNCTION,obtener_departamentos_sistema_seguro,,"CREATE OR REPLACE FUNCTION public.obtener_departamentos_sistema_seguro()
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+BEGIN
+    RETURN jsonb_build_object('status', 'success', 'data', (SELECT jsonb_agg(d) FROM (SELECT id, nombre FROM public.tdepartamentos ORDER BY nombre ASC) d));
+END; $function$
+",null
+FUNCTION,obtener_detalle_colegio_seguro,"p_usuario_id text, p_colegio_id text","CREATE OR REPLACE FUNCTION public.obtener_detalle_colegio_seguro(p_usuario_id text, p_colegio_id text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE v_col JSONB; v_rol text;
+BEGIN
+    SELECT rol INTO v_rol FROM public.tusuario WHERE id = p_usuario_id::uuid;
+    SELECT row_to_json(c) INTO v_col FROM public.tcolegios c 
+    WHERE c.id = p_colegio_id::integer AND (v_rol = 'admin' OR c.id_dist = p_usuario_id::uuid);
+    RETURN jsonb_build_object('status', 'success', 'data', v_col);
+END; $function$
+",null
+FUNCTION,obtener_detalle_factura_seguro,"p_factura_id text, p_usuario_id text","CREATE OR REPLACE FUNCTION public.obtener_detalle_factura_seguro(p_factura_id text, p_usuario_id text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_rol text;
+    v_factura_distribuidor uuid;
+BEGIN
+    -- Obtener rol del usuario
+    SELECT rol INTO v_rol
+    FROM public.tusuario
+    WHERE id = p_usuario_id::uuid;
+
+    -- Obtener distribuidor de la factura
+    SELECT id_distribuidor INTO v_factura_distribuidor
+    FROM public.tfacturas
+    WHERE id = p_factura_id::bigint;
+
+    -- Validar acceso: admin ve todas, distribuidor solo sus facturas
+    IF v_rol = 'distribuidor' AND v_factura_distribuidor != p_usuario_id::uuid THEN
+        RETURN jsonb_build_object(
+            'status', 'error',
+            'message', 'Acceso denegado: No tienes permiso para ver esta factura.'
+        );
+    ELSIF v_rol NOT IN ('admin', 'distribuidor') THEN
+        RETURN jsonb_build_object(
+            'status', 'error',
+            'message', 'Acceso denegado: Solo administradores o distribuidores pueden ver facturas.'
+        );
+    END IF;
+
+    RETURN jsonb_build_object(
+        'status', 'success',
+        'data',
+        (
+            SELECT row_to_json(f)
+            FROM (
+                SELECT 
+                    f.id,
+                    f.numero_factura,
+                    f.fecha_emision,
+                    f.fecha_vencimiento,
+                    f.estado,
+                    f.pagada,
+                    f.subtotal,
+                    f.descuento,
+                    f.impuesto,
+                    f.total,
+                    f.cantidad_estudiantes,
+                    f.cantidad_estudiantes_premarcados,
+                    f.cantidad_estudiantes_completaron,
+                    f.descripcion,
+                    f.notas_admin,
+                    f.id_solicitud_origen,
+                    f.precio_base_at_emission,
+                    f.precio_unitario_calculado,
+                    f.impuesto_porcentaje_at_emission,
+                    json_build_object(
+                        'id', u.id,
+                        'nombre', u.nombre,
+                        'identificacion', u.identificacion
+                    ) AS distribuidor,
+                    json_build_object(
+                        'id', c.id,
+                        'nombre', c.nombre,
+                        'ciudad', c.ciudad
+                    ) AS colegio,
+                    json_build_object(
+                        'id', s.id,
+                        'tgrados', json_build_object('nombre', g.nombre),
+                        'tgrupos', json_build_object('nombre', gr.nombre)
+                    ) AS solicitud
+                FROM public.tfacturas f
+                LEFT JOIN public.tusuario u ON f.id_distribuidor = u.id
+                LEFT JOIN public.tcolegios c ON f.id_colegio = c.id
+                LEFT JOIN public.tsolicitudes_aplicacion s ON f.id_solicitud_origen = s.id
+                LEFT JOIN public.tgrados g ON s.id_grado = g.id
+                LEFT JOIN public.tgrupos gr ON s.id_grupo = gr.id
+                WHERE f.id = p_factura_id::bigint
+            ) f
+        )
+    );
+END;
+$function$
+",null
+FUNCTION,obtener_detalle_solicitud_seguro,"p_solicitud_id bigint, p_usuario_id uuid","CREATE OR REPLACE FUNCTION public.obtener_detalle_solicitud_seguro(p_solicitud_id bigint, p_usuario_id uuid)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_rol text;
+    v_id_dist_colegio uuid;
+    v_id_rector_colegio uuid;
+    v_sol RECORD;
+BEGIN
+    -- 1. Identificar rol
+    SELECT rol INTO v_rol FROM public.tusuario WHERE id = p_usuario_id;
+    
+    -- 2. Obtener la solicitud y su colegio para validar propiedad
+    SELECT sa.*, c.id_dist, c.id_rector INTO v_sol
+    FROM public.tsolicitudes_aplicacion sa
+    JOIN public.tcolegios c ON sa.id_colegio = c.id
+    WHERE sa.id = p_solicitud_id;
+
+    IF v_sol IS NULL THEN
+        RETURN jsonb_build_object('status', 'error', 'message', 'Solicitud no encontrada.');
+    END IF;
+
+    -- 3. Validar acceso: admin ve todo, distribuidor solo lo suyo
+    IF v_rol = 'admin' 
+       OR (v_rol = 'distribuidor' AND v_sol.id_dist = p_usuario_id)
+       OR (v_rol = 'rector' AND v_sol.id_rector = p_usuario_id) 
+    THEN
+        RETURN jsonb_build_object(
+            'status', 'success',
+            'data', (
+                SELECT row_to_json(x) FROM (
+                    SELECT 
+                        s.*,
+                        json_build_object('nombre', c.nombre) as tcolegios,
+                        json_build_object('nombre', p.nombre) as tpruebas,
+                        json_build_object('nombre', g.nombre) as tgrados,
+                        json_build_object('nombre', gr.nombre) as tgrupos
+                    FROM public.tsolicitudes_aplicacion s
+                    JOIN public.tcolegios c ON s.id_colegio = c.id
+                    JOIN public.tpruebas p ON s.id_prueba = p.id
+                    JOIN public.tgrados g ON s.id_grado = g.id
+                    JOIN public.tgrupos gr ON s.id_grupo = gr.id
+                    WHERE s.id = p_solicitud_id
+                ) x
+            )
+        );
+    ELSE
+        RETURN jsonb_build_object('status', 'error', 'message', 'Acceso denegado a esta solicitud.');
+    END IF;
+END; $function$
+",null
+FUNCTION,obtener_detalle_usuario_seguro,"p_admin_id text, p_target_id text","CREATE OR REPLACE FUNCTION public.obtener_detalle_usuario_seguro(p_admin_id text, p_target_id text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM public.tusuario WHERE id = p_admin_id::uuid AND (rol = 'admin' OR rol = 'distribuidor')) THEN
+        RETURN jsonb_build_object('status', 'error', 'message', 'No autorizado');
+    END IF;
+    RETURN jsonb_build_object('status', 'success', 'data', (SELECT row_to_json(u) FROM public.tusuario u WHERE id = p_target_id::uuid));
+END; $function$
+",null
+FUNCTION,obtener_estadisticas_admin_seguras,p_admin_id uuid,"CREATE OR REPLACE FUNCTION public.obtener_estadisticas_admin_seguras(p_admin_id uuid)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+BEGIN
+    RETURN jsonb_build_object('status', 'success', 'data', jsonb_build_object(
+        'distribuidores', (SELECT count(*) FROM public.tusuario WHERE rol = 'distribuidor'),
+        'colegios', (SELECT count(*) FROM public.tcolegios),
+        'resultados', (SELECT count(*) FROM public.tresultados)
+    ));
+END; $function$
+",null
+FUNCTION,obtener_estadisticas_distribuidor_seguras,p_dist_id uuid,"CREATE OR REPLACE FUNCTION public.obtener_estadisticas_distribuidor_seguras(p_dist_id uuid)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE v_data jsonb;
+BEGIN
+    SELECT jsonb_build_object(
+        'colegios', (SELECT count(*) FROM tcolegios WHERE id_dist = p_dist_id),
+        'estudiantes', (SELECT count(*) FROM testudiantes WHERE id_colegio IN (SELECT id FROM tcolegios WHERE id_dist = p_dist_id))
+    ) INTO v_data;
+
+    RETURN jsonb_build_object('status', 'success', 'data', v_data);
+END; $function$
+",null
+FUNCTION,obtener_estadisticas_rector_seguras,p_rector_id uuid,"CREATE OR REPLACE FUNCTION public.obtener_estadisticas_rector_seguras(p_rector_id uuid)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE
+    v_colegio_id integer;
+    v_estudiantes integer;
+    v_finalizados integer;
+    v_en_proceso integer;
+    v_pruebas_activas integer;
+BEGIN
+    SELECT id INTO v_colegio_id FROM tcolegios WHERE id_rector = p_rector_id LIMIT 1;
+    IF v_colegio_id IS NULL THEN
+        RETURN jsonb_build_object('status', 'success', 'data', jsonb_build_object('estudiantes', 0, 'finalizados', 0, 'en_proceso', 0, 'pruebas', 0));
+    END IF;
+
+    SELECT count(*) INTO v_estudiantes FROM testudiantes WHERE id_colegio = v_colegio_id;
+    SELECT count(*) INTO v_finalizados FROM tresultados r JOIN testudiantes e ON r.id_estudiante = e.id WHERE e.id_colegio = v_colegio_id AND r.estado = 'Finalizado';
+    SELECT count(*) INTO v_en_proceso FROM tresultados r JOIN testudiantes e ON r.id_estudiante = e.id WHERE e.id_colegio = v_colegio_id AND r.estado = 'En Proceso';
+    SELECT count(*) INTO v_pruebas_activas FROM tsolicitudes_aplicacion WHERE id_colegio = v_colegio_id AND estado = 'aprobada';
+
+    RETURN jsonb_build_object('status', 'success', 'data', jsonb_build_object(
+        'estudiantes', v_estudiantes,
+        'finalizados', v_finalizados,
+        'en_proceso', v_en_proceso,
+        'pruebas', v_pruebas_activas
+    ));
+END; $function$
+",null
+FUNCTION,obtener_estudiantes_completados_seguro,p_colegio_id integer,"CREATE OR REPLACE FUNCTION public.obtener_estudiantes_completados_seguro(p_colegio_id integer)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE v_data jsonb;
+BEGIN
+    -- Solo traemos los IDs de estudiantes que tengan estado 'Finalizado' en tresultados
+    SELECT json_agg(id_estudiante)::jsonb INTO v_data
+    FROM tresultados r
+    JOIN testudiantes e ON r.id_estudiante = e.id
+    WHERE e.id_colegio = p_colegio_id 
+    AND r.estado = 'Finalizado'; -- ESTA ES LA CLAVE DEL ARREGLO
+
+    RETURN jsonb_build_object('status', 'success', 'data', COALESCE(v_data, '[]'::jsonb));
+END; $function$
+",null
+FUNCTION,obtener_estudiantes_completados_solicitud_seguro,"p_solicitud_id integer, p_usuario_id text","CREATE OR REPLACE FUNCTION public.obtener_estudiantes_completados_solicitud_seguro(p_solicitud_id integer, p_usuario_id text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+BEGIN
+    RETURN jsonb_build_object('status', 'success', 'data', (
+        SELECT jsonb_agg(row_to_json(d)) FROM (
+            SELECT e.id, e.nombre, u.identificacion, c.timestamp_completado
+            FROM public.testudiantes e JOIN public.tusuario u ON e.id = u.id
+            JOIN public.tcompletados_pruebas c ON e.id = c.id_estudiante
+            WHERE c.id_solicitud = p_solicitud_id ORDER BY e.nombre ASC
+        ) d
+    ));
+END; $function$
+",null
+FUNCTION,obtener_estudiantes_grupo_seguro,p_grupo_id text,"CREATE OR REPLACE FUNCTION public.obtener_estudiantes_grupo_seguro(p_grupo_id text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+BEGIN
+    RETURN jsonb_build_object(
+        'status', 'success',
+        'data',
+        (
+            SELECT jsonb_agg(row_to_json(e) ORDER BY e.nombre)
+            FROM (
+                SELECT 
+                    e.id,
+                    e.nombre,
+                    e.tipodoc,
+                    json_build_object(
+                        'id', u.id,
+                        'identificacion', u.identificacion,
+                        'nombre', u.nombre
+                    ) AS tusuario
+                FROM public.testudiantes e
+                INNER JOIN public.tusuario u ON e.id = u.id
+                WHERE e.id_grupo = p_grupo_id::integer
+                ORDER BY e.nombre ASC
+            ) e
+        )
+    );
+END;
+$function$
+",null
+FUNCTION,obtener_examen_estudiante_seguro,"p_estudiante_id uuid, p_grupo_id integer","CREATE OR REPLACE FUNCTION public.obtener_examen_estudiante_seguro(p_estudiante_id uuid, p_grupo_id integer)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_hoy date := CURRENT_DATE;
+    v_resultado_previo RECORD;
+    v_solicitud RECORD;
+    v_preguntas jsonb;
+    v_pend_count integer;
+BEGIN
+    -- 1. Verificar si el estudiante ya tiene un resultado (Finalizado o Proceso)
+    SELECT id, estado, respuestas_raw INTO v_resultado_previo 
+    FROM public.tresultados 
+    WHERE id_estudiante = p_estudiante_id;
+
+    -- 2. Buscar solicitud aprobada y vigente para el grupo
+    SELECT sa.*, row_to_json(p.*) as metadata_prueba
+    INTO v_solicitud
+    FROM public.tsolicitudes_aplicacion sa
+    JOIN public.tpruebas p ON sa.id_prueba = p.id
+    WHERE sa.id_grupo = p_grupo_id
+      AND sa.estado = 'aprobada'
+      AND v_hoy >= sa.fecha_inicio
+      AND v_hoy <= sa.fecha_fin
+    ORDER BY sa.id DESC
+    LIMIT 1;
+
+    -- 3. Si hay solicitud vigente, cargar sus preguntas
+    IF v_solicitud.id IS NOT NULL THEN
+        SELECT jsonb_agg(q ORDER BY num_pregunta ASC) INTO v_preguntas
+        FROM public.tpreguntas q
+        WHERE q.id_prueba = v_solicitud.id_prueba;
+    END IF;
+
+    -- 4. Contar solicitudes pendientes (para mensajes de error específicos)
+    SELECT count(*)::integer INTO v_pend_count
+    FROM public.tsolicitudes_aplicacion
+    WHERE id_grupo = p_grupo_id AND estado = 'pendiente';
+
+    -- 5. Construir respuesta final
+    RETURN jsonb_build_object(
+        'status', 'success',
+        'resultado_previo', row_to_json(v_resultado_previo),
+        'solicitud_activa', row_to_json(v_solicitud),
+        'preguntas', v_preguntas,
+        'tiene_pendientes', (v_pend_count > 0)
+    );
+
+EXCEPTION WHEN OTHERS THEN
+    RETURN jsonb_build_object('status', 'error', 'message', SQLERRM);
+END; $function$
+",null
+FUNCTION,obtener_gestion_resultados_distribuidor_seguro,p_dist_id uuid,"CREATE OR REPLACE FUNCTION public.obtener_gestion_resultados_distribuidor_seguro(p_dist_id uuid)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+BEGIN
+    RETURN jsonb_build_object('status', 'success', 'data', (
+        SELECT jsonb_agg(s)
+        FROM (
+            SELECT 
+                sa.id, 
+                sa.resultados_habilitados, 
+                sa.resultados_fecha_inicio, 
+                sa.resultados_fecha_fin,
+                jsonb_build_object('nombre', c.nombre) AS tcolegios,
+                jsonb_build_object('nombre', p.nombre) AS tpruebas,
+                jsonb_build_object('nombre', g.nombre) AS tgrados,
+                jsonb_build_object('nombre', gr.nombre) AS tgrupos
+            FROM public.tsolicitudes_aplicacion sa
+            JOIN public.tcolegios c ON sa.id_colegio = c.id
+            JOIN public.tpruebas p ON sa.id_prueba = p.id
+            JOIN public.tgrados g ON sa.id_grado = g.id
+            JOIN public.tgrupos gr ON sa.id_grupo = gr.id
+            WHERE c.id_dist = p_dist_id
+              AND sa.estado = 'aprobada'
+            ORDER BY sa.created_at DESC
+        ) s
+    ));
+END; $function$
+",null
+FUNCTION,obtener_grados_colegio_seguro,p_colegio_id text,"CREATE OR REPLACE FUNCTION public.obtener_grados_colegio_seguro(p_colegio_id text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+BEGIN
+    RETURN jsonb_build_object('status', 'success', 'data', (
+        SELECT jsonb_agg(d) FROM (
+            SELECT DISTINCT g.id, g.nombre 
+            FROM public.tgrados g
+            JOIN public.tgrupos gr ON g.id = gr.id_grado
+            WHERE gr.id_colegio = p_colegio_id::integer
+            ORDER BY g.nombre ASC
+        ) d
+    ));
+END; $function$
+",null
+FUNCTION,obtener_grupos_grado_seguro,"p_grado_id text, p_colegio_id text","CREATE OR REPLACE FUNCTION public.obtener_grupos_grado_seguro(p_grado_id text, p_colegio_id text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+BEGIN
+    RETURN jsonb_build_object('status', 'success', 'data', (
+        SELECT jsonb_agg(g) FROM (
+            SELECT * FROM public.tgrupos 
+            WHERE id_grado = p_grado_id::integer AND id_colegio = p_colegio_id::integer 
+            ORDER BY nombre ASC) g));
+END; $function$
+",null
+FUNCTION,obtener_info_grupo_seguro,p_grupo_id integer,"CREATE OR REPLACE FUNCTION public.obtener_info_grupo_seguro(p_grupo_id integer)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE v_data jsonb;
+BEGIN
+    SELECT row_to_json(t)::jsonb INTO v_data FROM (
+        SELECT gr.id, gr.nombre, g.nombre as grado_nombre, c.nombre as colegio_nombre, c.id as id_colegio
+        FROM tgrupos gr
+        JOIN tgrados g ON gr.id_grado = g.id
+        JOIN tcolegios c ON gr.id_colegio = c.id
+        WHERE gr.id = p_grupo_id
+    ) t;
+    IF v_data IS NULL THEN RETURN jsonb_build_object('status', 'error', 'message', 'No encontrado'); END IF;
+    RETURN jsonb_build_object('status', 'success', 'data', v_data);
+END; $function$
+",null
+FUNCTION,obtener_listado_colegios_global_seguro,p_admin_id text,"CREATE OR REPLACE FUNCTION public.obtener_listado_colegios_global_seguro(p_admin_id text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_rol text;
+BEGIN
+    -- 1. Identificar el rol del usuario que hace la solicitud
+    SELECT rol INTO v_rol FROM public.tusuario WHERE id = p_admin_id::uuid;
+
+    -- 2. Lógica para el Administrador (Ve todos los colegios)
+    IF v_rol = 'admin' THEN
+        RETURN jsonb_build_object('status', 'success', 'data', (
+            SELECT jsonb_agg(c) FROM (
+                SELECT col.*, dist.nombre as distribuidor_nombre 
+                FROM public.tcolegios col 
+                LEFT JOIN public.tusuario dist ON col.id_dist = dist.id 
+                ORDER BY col.nombre ASC
+            ) c));
+
+    -- 3. Lógica para el Distribuidor (Ve solo sus colegios vinculados)
+    ELSIF v_rol = 'distribuidor' THEN
+        RETURN jsonb_build_object('status', 'success', 'data', (
+            SELECT jsonb_agg(c) FROM (
+                SELECT col.*, NULL as distribuidor_nombre 
+                FROM public.tcolegios col 
+                WHERE col.id_dist = p_admin_id::uuid 
+                ORDER BY col.nombre ASC
+            ) c));
+
+    -- 4. Bloqueo para otros roles no autorizados
+    ELSE
+        RETURN jsonb_build_object('status', 'error', 'message', 'Acceso no autorizado para este listado.');
+    END IF;
+END; $function$
+",null
+FUNCTION,obtener_listado_facturas_seguro,"p_usuario_id text, p_distribuidor_id text DEFAULT NULL::text, p","CREATE OR REPLACE FUNCTION public.obtener_listado_facturas_seguro(p_usuario_id text, p_distribuidor_id text DEFAULT NULL::text, p_colegio_id integer DEFAULT NULL::integer, p_estado text DEFAULT NULL::text, p_fecha_desde text DEFAULT NULL::text, p_fecha_hasta text DEFAULT NULL::text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_rol text;
+    v_usuario_dist_id uuid;
+BEGIN
+    -- Obtener rol del usuario que solicita
+    SELECT rol INTO v_rol
+    FROM public.tusuario
+    WHERE id = p_usuario_id::uuid;
+
+    -- Validar acceso: admin ve todas, distribuidor solo sus facturas
+    IF v_rol = 'distribuidor' THEN
+        v_usuario_dist_id := p_usuario_id::uuid;
+    ELSIF v_rol != 'admin' THEN
+        RETURN jsonb_build_object(
+            'status', 'error',
+            'message', 'Acceso denegado: Solo administradores o distribuidores pueden ver facturas.'
+        );
+    END IF;
+
+    RETURN jsonb_build_object(
+        'status', 'success',
+        'data',
+        (
+            SELECT jsonb_agg(row_to_json(f))
+            FROM (
+                SELECT 
+                    f.id,
+                    f.numero_factura,
+                    f.fecha_emision,
+                    f.estado,
+                    f.total,
+                    f.pagada,
+                    u.nombre AS distribuidor_nombre,
+                    c.nombre AS colegio_nombre,
+                    g.nombre AS grado_nombre,
+                    gr.nombre AS grupo_nombre,
+                    f.id_solicitud_origen
+                FROM public.tfacturas f
+                LEFT JOIN public.tusuario u ON f.id_distribuidor = u.id
+                LEFT JOIN public.tcolegios c ON f.id_colegio = c.id
+                LEFT JOIN public.tsolicitudes_aplicacion s ON f.id_solicitud_origen = s.id
+                LEFT JOIN public.tgrados g ON s.id_grado = g.id
+                LEFT JOIN public.tgrupos gr ON s.id_grupo = gr.id
+                WHERE 
+                    -- Si es distribuidor, solo sus facturas
+                    (v_rol = 'admin' OR f.id_distribuidor = v_usuario_dist_id)
+                    -- Filtros opcionales
+                    AND (p_distribuidor_id IS NULL OR f.id_distribuidor = p_distribuidor_id::uuid)
+                    AND (p_colegio_id IS NULL OR f.id_colegio = p_colegio_id)
+                    AND (p_estado IS NULL OR f.estado = p_estado)
+                    AND (p_fecha_desde IS NULL OR f.fecha_emision >= p_fecha_desde::date)
+                    AND (p_fecha_hasta IS NULL OR f.fecha_emision <= p_fecha_hasta::date)
+                ORDER BY f.fecha_emision DESC
+            ) f
+        )
+    );
+END;
+$function$
+",null
+FUNCTION,obtener_listado_pruebas_seguro,p_usuario_id text,"CREATE OR REPLACE FUNCTION public.obtener_listado_pruebas_seguro(p_usuario_id text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+BEGIN
+    RETURN jsonb_build_object('status', 'success', 'data', (SELECT jsonb_agg(t) FROM (SELECT * FROM public.tpruebas ORDER BY id ASC) t));
+END; $function$
+",null
+FUNCTION,obtener_mi_resultado_seguro,p_estudiante_id text,"CREATE OR REPLACE FUNCTION public.obtener_mi_resultado_seguro(p_estudiante_id text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE v_rec record;
+BEGIN
+    SELECT res.id, res.id_prueba, res.respuestas, res.respuestas_raw, res.estado,
+           p.nombre as prueba_nombre, p.tipo_respuesta, p.logica_calculo, p.tipo_informe
+    FROM tresultados res JOIN tpruebas p ON res.id_prueba = p.id
+    WHERE (res.id_estudiante::text = p_estudiante_id)
+    ORDER BY res.created_at DESC LIMIT 1 INTO v_rec;
+    IF v_rec.id IS NULL THEN RETURN jsonb_build_object('status', 'error', 'message', 'Sin resultados'); END IF;
+    RETURN jsonb_build_object('status', 'success', 'data', row_to_json(v_rec));
+END; $function$
+",null
+FUNCTION,obtener_perfil_usuario_publico,"p_identificacion text, p_tipodoc text","CREATE OR REPLACE FUNCTION public.obtener_perfil_usuario_publico(p_identificacion text, p_tipodoc text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE v_perfil RECORD;
+BEGIN
+    SELECT id, nombre, identificacion, tipodoc, rol, estado, debe_cambiar_password, 
+           (password_hash IS NOT NULL AND password_hash <> '') as tiene_password, 
+           nombre_institucion, id_colegio
+    INTO v_perfil FROM public.v_perfil_usuario WHERE identificacion = p_identificacion AND tipodoc = p_tipodoc;
+    IF v_perfil IS NULL THEN RETURN jsonb_build_object('status', 'error', 'message', 'Usuario no encontrado.'); END IF;
+    RETURN jsonb_build_object('status', 'success', 'user', row_to_json(v_perfil));
+END; $function$
+",null
+FUNCTION,obtener_precios_sistema_seguro,p_admin_id text,"CREATE OR REPLACE FUNCTION public.obtener_precios_sistema_seguro(p_admin_id text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM public.tusuario WHERE id = p_admin_id::uuid AND rol = 'admin') THEN RETURN jsonb_build_object('status', 'error', 'message', 'No autorizado'); END IF;
+    RETURN jsonb_build_object('status', 'success', 'data', (SELECT jsonb_agg(p) FROM (SELECT * FROM public.tprecios ORDER BY created_at DESC) p));
+END; $function$
+",null
+FUNCTION,obtener_preguntas_prueba_seguro,"p_prueba_id text, p_usuario_id text","CREATE OR REPLACE FUNCTION public.obtener_preguntas_prueba_seguro(p_prueba_id text, p_usuario_id text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE v_rol text;
+BEGIN
+    SELECT rol INTO v_rol FROM public.tusuario WHERE id = p_usuario_id::uuid;
+    IF v_rol NOT IN ('admin', 'distribuidor') THEN 
+        RETURN jsonb_build_object('status', 'error', 'message', 'Acceso denegado.'); 
+    END IF;
+    
+    RETURN jsonb_build_object('status', 'success', 'data', (
+        SELECT jsonb_agg(q) FROM (
+            SELECT * FROM public.tpreguntas 
+            WHERE id_prueba = p_prueba_id::integer 
+            ORDER BY num_pregunta ASC
+        ) q
+    ));
+END; $function$
+",null
+FUNCTION,obtener_solicitudes_admin_seguro,p_admin_id uuid,"CREATE OR REPLACE FUNCTION public.obtener_solicitudes_admin_seguro(p_admin_id uuid)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM public.tusuario WHERE id = p_admin_id AND rol = 'admin') THEN
+        RETURN jsonb_build_object('status', 'error', 'message', 'No autorizado');
+    END IF;
+
+    RETURN jsonb_build_object(
+        'status', 'success',
+        'data',
+        (
+            SELECT jsonb_agg(row_to_json(s))
+            FROM (
+                SELECT
+                    sa.id, sa.id_colegio, sa.id_prueba, sa.id_grado, sa.id_grupo,
+                    sa.fecha_inicio, sa.fecha_fin, sa.estado, sa.motivo_rechazo, sa.created_at,
+                    c.nombre AS colegio_nombre,
+                    u_dist.nombre AS distribuidor_nombre,
+                    tp.nombre AS prueba_nombre,
+                    tg.nombre AS grado_nombre,
+                    tgr.nombre AS grupo_nombre
+                FROM public.tsolicitudes_aplicacion sa
+                LEFT JOIN public.tcolegios c ON sa.id_colegio = c.id
+                LEFT JOIN public.tusuario u_dist ON c.id_dist = u_dist.id
+                LEFT JOIN public.tpruebas tp ON sa.id_prueba = tp.id
+                LEFT JOIN public.tgrados tg ON sa.id_grado = tg.id
+                LEFT JOIN public.tgrupos tgr ON sa.id_grupo = tgr.id
+                ORDER BY sa.created_at DESC
+            ) s
+        )
+    );
+END;
+$function$
+",null
+FUNCTION,obtener_solicitudes_aprobadas_colegio_seguro,"p_colegio_id integer, p_usuario_id text","CREATE OR REPLACE FUNCTION public.obtener_solicitudes_aprobadas_colegio_seguro(p_colegio_id integer, p_usuario_id text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE v_data jsonb;
+BEGIN
+    SELECT json_agg(t)::jsonb INTO v_data
+    FROM (
+        SELECT 
+            s.id, s.id_prueba, s.fecha_inicio, s.fecha_fin, s.estado,
+            p.nombre as prueba_nombre,
+            COALESCE(g.nombre, 'General') as grado_nombre,
+            COALESCE(gru.nombre, 'Todos') as grupo_nombre
+        FROM tsolicitudes_aplicacion s
+        LEFT JOIN tpruebas p ON s.id_prueba = p.id
+        LEFT JOIN tgrados g ON s.id_grado = g.id
+        LEFT JOIN tgrupos gru ON s.id_grupo = gru.id
+        WHERE s.id_colegio = p_colegio_id 
+        AND s.estado = 'aprobada'
+    ) t;
+    RETURN jsonb_build_object('status', 'success', 'data', COALESCE(v_data, '[]'::jsonb));
+END; $function$
+",null
+FUNCTION,obtener_usuarios_sistema_seguro,"p_admin_id uuid, p_rol text DEFAULT NULL::text, p_term text DEF","CREATE OR REPLACE FUNCTION public.obtener_usuarios_sistema_seguro(p_admin_id uuid, p_rol text DEFAULT NULL::text, p_term text DEFAULT NULL::text, p_school_term text DEFAULT NULL::text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+BEGIN
+    -- Validación admin
+    IF NOT EXISTS (
+        SELECT 1
+        FROM public.tusuario
+        WHERE id = p_admin_id
+        AND rol = 'admin'
+    ) THEN
+        RETURN jsonb_build_object(
+            'status', 'error',
+            'message', 'Usuario no autorizado'
+        );
+    END IF;
+
+    RETURN jsonb_build_object(
+        'status', 'success',
+        'data',
+        (
+            SELECT jsonb_agg(row_to_json(x) ORDER BY x.nombre)
+            FROM (
+                -- Rectores con su colegio
+                SELECT
+                    u.id,
+                    u.nombre,
+                    u.identificacion,
+                    u.rol,
+                    u.estado,
+                    u.tipodoc,
+                    COALESCE(c.nombre, 'SISTEMA CENTRAL') AS nombre_institucion
+                FROM public.tusuario u
+                LEFT JOIN public.tcolegios c ON u.id = c.id_rector
+                WHERE u.rol = 'rector'
+                    AND (p_rol IS NULL OR u.rol = p_rol)
+                    AND (p_term IS NULL OR u.nombre ILIKE '%' || p_term || '%' OR u.identificacion ILIKE '%' || p_term || '%')
+                    AND (p_school_term IS NULL OR c.nombre ILIKE '%' || p_school_term || '%')
+                
+                UNION ALL
+                
+                -- Estudiantes con su colegio
+                SELECT
+                    u.id,
+                    u.nombre,
+                    u.identificacion,
+                    u.rol,
+                    u.estado,
+                    u.tipodoc,
+                    COALESCE(c.nombre, 'SIN COLEGIO ASIGNADO') AS nombre_institucion
+                FROM public.tusuario u
+                LEFT JOIN public.testudiantes e ON u.id = e.id
+                LEFT JOIN public.tcolegios c ON e.id_colegio = c.id
+                WHERE u.rol = 'estudiante'
+                    AND (p_rol IS NULL OR u.rol = p_rol)
+                    AND (p_term IS NULL OR u.nombre ILIKE '%' || p_term || '%' OR u.identificacion ILIKE '%' || p_term || '%')
+                    AND (p_school_term IS NULL OR c.nombre ILIKE '%' || p_school_term || '%')
+                
+                ORDER BY nombre ASC
+            ) x
+        )
+    );
+
+END;
+$function$
+",null
+FUNCTION,procesar_facturacion_solicitud,p_solicitud_id bigint,"CREATE OR REPLACE FUNCTION public.procesar_facturacion_solicitud(p_solicitud_id bigint)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_solicitud RECORD;
+    v_precio RECORD;
+    v_cantidad_premarcados INTEGER;
+    v_cantidad_completaron INTEGER;
+    v_precio_unitario NUMERIC(10, 2);
+    v_subtotal NUMERIC(12, 2);
+    v_descuento NUMERIC(12, 2);
+    v_impuesto NUMERIC(12, 2);
+    v_total NUMERIC(12, 2);
+    v_numero_factura CHARACTER VARYING;
+    v_factura_id BIGINT;
+    v_resultado JSONB;
+
+    -- Variables para el cálculo estimado
+    v_subtotal_estimado NUMERIC(12, 2);
+    v_descuento_estimado NUMERIC(12, 2);
+    v_impuesto_estimado NUMERIC(12, 2);
+    v_total_estimado NUMERIC(12, 2);
+BEGIN
+    
+    SELECT 
+        s.id, 
+        c.id_dist AS id_distribuidor,
+        s.id_colegio, 
+        s.estado,
+        s.id_grupo,
+        s.fecha_inicio,
+        s.fecha_fin
+    INTO v_solicitud
+    FROM public.tsolicitudes_aplicacion s
+    JOIN public.tcolegios c ON s.id_colegio = c.id
+    WHERE s.id = p_solicitud_id
+    LIMIT 1;
+    
+    IF v_solicitud IS NULL THEN
+        RETURN jsonb_build_object(
+            'status', 'error',
+            'message', 'Solicitud no encontrada',
+            'solicitud_id', p_solicitud_id
+        );
+    END IF;
+    
+    IF v_solicitud.estado != 'aprobada' THEN
+        RETURN jsonb_build_object(
+            'status', 'error',
+            'message', 'Solo se pueden facturar solicitudes aprobadas',
+            'estado_actual', v_solicitud.estado,
+            'solicitud_id', p_solicitud_id
+        );
+    END IF;
+    
+    -- Contar estudiantes premarcados (en el grupo)
+    SELECT COUNT(*) INTO v_cantidad_premarcados
+    FROM public.testudiantes
+    WHERE id_grupo = v_solicitud.id_grupo;
+    
+    -- Contar estudiantes que completaron (tienen resultado)
+    SELECT COUNT(*) INTO v_cantidad_completaron
+    FROM public.tcompletados_pruebas
+    WHERE id_solicitud = p_solicitud_id;
+    
+    IF v_cantidad_premarcados = 0 THEN
+        -- No es un error crítico, puede que no haya estudiantes aún o que la solicitud sea para un grupo vacío
+        -- Se permite continuar, pero se registra una advertencia.
+        RAISE WARNING 'No hay estudiantes premarcados en el grupo % de la solicitud %', v_solicitud.id_grupo, p_solicitud_id;
+    END IF;
+    
+    SELECT 
+        id, 
+        precio_base, 
+        precio_por_estudiante, 
+        descuento_porcentaje,
+        impuesto_porcentaje
+    INTO v_precio
+    FROM public.tprecios
+    WHERE estado = 'Activo'
+        AND fecha_vigencia_desde <= CURRENT_DATE
+        AND (fecha_vigencia_hasta IS NULL OR fecha_vigencia_hasta >= CURRENT_DATE)
+    ORDER BY created_at DESC
+    LIMIT 1;
+    
+    IF v_precio IS NULL THEN
+        RETURN jsonb_build_object(
+            'status', 'error',
+            'message', 'No hay configuración de precios vigente',
+            'fecha_actual', CURRENT_DATE
+        );
+    END IF;
+    
+    -- Cálculos para la factura real (basado en completados)
+    v_precio_unitario := v_precio.precio_por_estudiante;
+    v_subtotal := ROUND(v_precio.precio_base + (v_precio_unitario * v_cantidad_completaron), 2);
+    v_descuento := ROUND(v_subtotal * (v_precio.descuento_porcentaje / 100), 2);
+    v_impuesto := ROUND((v_subtotal - v_descuento) * (v_precio.impuesto_porcentaje / 100), 2);
+    v_total := ROUND((v_subtotal - v_descuento) + v_impuesto, 2);
+
+    -- Cálculos para el total estimado (basado en premarcados)
+    v_subtotal_estimado := ROUND(v_precio.precio_base + (v_precio_unitario * v_cantidad_premarcados), 2);
+    v_descuento_estimado := ROUND(v_subtotal_estimado * (v_precio.descuento_porcentaje / 100), 2);
+    v_impuesto_estimado := ROUND((v_subtotal_estimado - v_descuento_estimado) * (v_precio.impuesto_porcentaje / 100), 2);
+    v_total_estimado := ROUND((v_subtotal_estimado - v_descuento_estimado) + v_impuesto_estimado, 2);
+    
+    v_numero_factura := 'FAC-' || TO_CHAR(CURRENT_DATE, 'YYYY') || '-' || 
+                       LPAD((SELECT COALESCE(MAX(CAST(SUBSTRING(numero_factura FROM 9) AS INTEGER)), 0) + 1 
+                             FROM public.tfacturas WHERE numero_factura LIKE 'FAC-' || TO_CHAR(CURRENT_DATE, 'YYYY') || '-%')::TEXT, 6, '0');
+    
+    INSERT INTO public.tfacturas (
+        id_distribuidor,
+        id_colegio,
+        id_solicitud_origen,
+        numero_factura,
+        fecha_emision,
+        fecha_vencimiento,
+        -- Premarcados y completaron
+        cantidad_estudiantes_premarcados,
+        cantidad_estudiantes_completaron,
+        -- Componentes de precio (snapshot)
+        precio_base_at_emission,
+        descuento_porcentaje_at_emission,
+        impuesto_porcentaje_at_emission,
+        -- Calculados
+        precio_unitario_calculado,
+        subtotal_calculado,
+        descuento_calculado,
+        impuesto_calculado,
+        total_calculado,
+        -- Inicialmente real = calculado
+        cantidad_estudiantes_real,
+        precio_unitario_real,
+        subtotal_real,
+        descuento_real,
+        impuesto_real,
+        total_real,
+        -- Finales (estos campos se usarán para el cierre de evaluación)
+        subtotal,
+        descuento,
+        impuesto,
+        total,
+        cantidad_estudiantes,
+        total_estimado,
+        descripcion,
+        estado
+    )
+    VALUES (
+        v_solicitud.id_distribuidor,
+        v_solicitud.id_colegio,
+        p_solicitud_id,
+        v_numero_factura,
+        CURRENT_DATE,
+        CURRENT_DATE + INTERVAL '30 days',
+        v_cantidad_premarcados,
+        v_cantidad_completaron,
+        -- Componentes de precio (snapshot)
+        v_precio.precio_base,
+        v_precio.descuento_porcentaje,
+        v_precio.impuesto_porcentaje,
+        -- Calculados
+        v_precio_unitario,
+        v_subtotal,
+        v_descuento,
+        v_impuesto,
+        v_total,
+        v_cantidad_completaron,
+        v_precio_unitario,
+        v_subtotal,
+        v_descuento,
+        v_impuesto,
+        v_total,
+        v_subtotal,
+        v_descuento,
+        v_impuesto,
+        v_total,
+        v_cantidad_completaron,
+        v_total_estimado,
+        'Prueba vocacional - Premarcados: ' || v_cantidad_premarcados || ', Completaron: ' || v_cantidad_completaron || ', Período: ' || 
+        TO_CHAR(v_solicitud.fecha_inicio, 'DD/MM/YYYY') || ' a ' || TO_CHAR(v_solicitud.fecha_fin, 'DD/MM/YYYY'),
+        'Emitida'
+    )
+    RETURNING id INTO v_factura_id;
+    
+    v_resultado := jsonb_build_object(
+        'status', 'success',
+        'message', 'Factura generada correctamente',
+        'factura_id', v_factura_id,
+        'numero_factura', v_numero_factura,
+        'solicitud_id', p_solicitud_id,
+        'cantidad_premarcados', v_cantidad_premarcados,
+        'cantidad_completaron', v_cantidad_completaron,
+        'subtotal', v_subtotal,
+        'descuento', v_descuento,
+        'impuesto', v_impuesto,
+        'total', v_total,
+        'total_estimado', v_total_estimado,
+        'fecha_emision', CURRENT_DATE,
+        'fecha_vencimiento', CURRENT_DATE + INTERVAL '30 days'
+    );
+    
+    RETURN v_resultado;
+    
+EXCEPTION WHEN OTHERS THEN
+    RETURN jsonb_build_object(
+        'status', 'error',
+        'message', 'Error durante procesamiento de facturación',
+        'error_detail', SQLERRM,
+        'error_code', SQLSTATE
+    );
+END;
+$function$
+",null
+FUNCTION,registrar_colegio_seguro,"p_nombre text, p_dane text, p_ciudad text, p_direccion text, p_","CREATE OR REPLACE FUNCTION public.registrar_colegio_seguro(p_nombre text, p_dane text, p_ciudad text, p_direccion text, p_depto_id integer, p_distribuidor_id uuid, p_telefono text)
+ RETURNS json
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    new_colegio_id integer;
+BEGIN
+    INSERT INTO public.tcolegios (
+        nombre,
+        dane,
+        ciudad,
+        direccion,
+        id_departamento,
+        id_dist,
+        telefono,
+        resultados_habilitados
+    )
+    VALUES (
+        p_nombre::character varying,    -- tcolegios.nombre es character varying
+        p_dane::character varying,      -- tcolegios.dane es character varying
+        p_ciudad::character varying,    -- tcolegios.ciudad es character varying
+        p_direccion::character varying, -- tcolegios.direccion es character varying
+        p_depto_id,                     -- tcolegios.id_departamento es integer
+        p_distribuidor_id,              -- tcolegios.id_dist es uuid
+        p_telefono,                     -- tcolegios.telefono es text
+        false
+    )
+    RETURNING id INTO new_colegio_id;
+
+    RETURN json_build_object(
+        'status', 'success',
+        'id', new_colegio_id,
+        'message', 'Colegio registrado correctamente'
+    );
+
+EXCEPTION WHEN OTHERS THEN
+    RETURN json_build_object(
+        'status', 'error',
+        'message', SQLERRM
+    );
+END;
+$function$
+",null
+FUNCTION,registrar_resultado_seguro,"p_estudiante_id text, p_prueba_id bigint, p_total_preg integer,","CREATE OR REPLACE FUNCTION public.registrar_resultado_seguro(p_estudiante_id text, p_prueba_id bigint, p_total_preg integer, p_respuestas text, p_respuestas_raw text, p_estado text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+BEGIN
+    -- Ahora el llamado interno encontrará la función porque ambas usan bigint
+    RETURN public.guardar_progreso_estudiante_seguro(
+        p_estudiante_id,
+        p_prueba_id,
+        p_total_preg,
+        p_respuestas,
+        p_respuestas_raw,
+        p_estado
+    );
+END;
+$function$
+",null
+FUNCTION,rpc_core_listar_distribuidores,p_admin_id uuid,"CREATE OR REPLACE FUNCTION public.rpc_core_listar_distribuidores(p_admin_id uuid)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+BEGIN
+    RETURN jsonb_build_object('status', 'success', 'data', (
+        SELECT json_agg(t) FROM (
+            SELECT id, nombre, identificacion, tipodoc, estado FROM tusuario 
+            WHERE rol = 'distribuidor' 
+            AND ((SELECT rol FROM tusuario WHERE id = p_admin_id) = 'admin' OR id = p_admin_id)
+        ) t
+    ));
+END; $function$
+",null
+FUNCTION,rpc_core_listar_estudiantes,p_colegio_id integer,"CREATE OR REPLACE FUNCTION public.rpc_core_listar_estudiantes(p_colegio_id integer)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE v_data jsonb;
+BEGIN
+    SELECT jsonb_agg(t) INTO v_data FROM (
+        SELECT e.id, e.nombre, e.id_grado, e.id_grupo, g.nombre as grado_nombre, gr.nombre as grupo_nombre, u.identificacion, u.tipodoc
+        FROM testudiantes e
+        JOIN tusuario u ON e.id = u.id
+        LEFT JOIN tgrados g ON e.id_grado = g.id
+        LEFT JOIN tgrupos gr ON e.id_grupo = gr.id
+        WHERE e.id_colegio = p_colegio_id
+        ORDER BY g.numero ASC, gr.nombre ASC, e.nombre ASC
+    ) t;
+    RETURN jsonb_build_object('status', 'success', 'data', COALESCE(v_data, '[]'::jsonb));
+END; $function$
+",null
+FUNCTION,rpc_core_listar_pruebas_aprobadas,p_colegio_id integer,"CREATE OR REPLACE FUNCTION public.rpc_core_listar_pruebas_aprobadas(p_colegio_id integer)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE v_data jsonb;
+BEGIN
+    SELECT json_agg(t)::jsonb INTO v_data
+    FROM (
+        SELECT s.id, s.id_prueba, s.id_grado, s.id_grupo, s.fecha_inicio, s.fecha_fin, s.estado,
+               p.nombre as prueba_nombre, g.nombre as grado_nombre, gru.nombre as grupo_nombre
+        FROM tsolicitudes_aplicacion s
+        JOIN tpruebas p ON s.id_prueba = p.id
+        LEFT JOIN tgrados g ON s.id_grado = g.id
+        LEFT JOIN tgrupos gru ON s.id_grupo = gru.id
+        WHERE s.id_colegio = p_colegio_id AND s.estado = 'aprobada'
+    ) t;
+    RETURN jsonb_build_object('status', 'success', 'data', COALESCE(v_data, '[]'::jsonb));
+END; $function$
+",null
+FUNCTION,rpc_ver_estudiantes_informe_rector,"p_rector_id uuid, p_colegio_id integer","CREATE OR REPLACE FUNCTION public.rpc_ver_estudiantes_informe_rector(p_rector_id uuid, p_colegio_id integer)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE v_data jsonb;
+BEGIN
+    SELECT jsonb_agg(t) INTO v_data FROM (
+        SELECT e.id, u.nombre, u.identificacion, g.nombre as grado_nombre, gr.nombre as grupo_nombre
+        FROM testudiantes e
+        JOIN tusuario u ON e.id = u.id
+        LEFT JOIN tgrados g ON e.id_grado = g.id
+        LEFT JOIN tgrupos gr ON e.id_grupo = gr.id
+        WHERE e.id_colegio = p_colegio_id
+        ORDER BY u.nombre ASC
+    ) t;
+
+    RETURN jsonb_build_object('status', 'success', 'data', COALESCE(v_data, '[]'::jsonb));
+END; $function$
+",null
+FUNCTION,trigger_facturacion_solicitud_aprobada,,"CREATE OR REPLACE FUNCTION public.trigger_facturacion_solicitud_aprobada()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_facturacion_result JSONB;
+BEGIN
+    
+    IF NEW.estado = 'aprobada' AND (OLD.estado != 'aprobada' OR OLD.estado IS NULL) THEN
+        
+        v_facturacion_result := public.procesar_facturacion_solicitud(NEW.id);
+        
+        IF (v_facturacion_result->>'status') = 'error' THEN
+            INSERT INTO public.tauditoria_facturacion (
+                id_solicitud,
+                accion,
+                resultado,
+                timestamp
+            ) VALUES (
+                NEW.id,
+                'INTENTO_FACTURACION_FALLIDO',
+                v_facturacion_result::TEXT,
+                NOW()
+            );
+            
+            RAISE WARNING 'Facturación para solicitud % falló: %', NEW.id, v_facturacion_result->>'message';
+        ELSE
+            INSERT INTO public.tauditoria_facturacion (
+                id_solicitud,
+                accion,
+                resultado,
+                timestamp
+            ) VALUES (
+                NEW.id,
+                'FACTURACION_EXITOSA',
+                v_facturacion_result::TEXT,
+                NOW()
+            );
+        END IF;
+    END IF;
+    
+    RETURN NEW;
+END;
+$function$
+",null
+FUNCTION,trigger_registrar_completado,,"CREATE OR REPLACE FUNCTION public.trigger_registrar_completado()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_id_solicitud BIGINT;
+BEGIN
+    -- CASO A: El estudiante finaliza la prueba (O se marca manualmente como Finalizado)
+    IF (NEW.estado = 'Finalizado') THEN
+        -- Localizamos la solicitud de aplicación aprobada
+        SELECT sa.id INTO v_id_solicitud
+        FROM public.tsolicitudes_aplicacion sa
+        JOIN public.tgrupos g ON g.id = sa.id_grupo
+        JOIN public.testudiantes e ON e.id_grupo = g.id
+        WHERE e.id = NEW.id_estudiante
+          AND sa.id_prueba = NEW.id_prueba
+          AND sa.estado = 'aprobada'
+        LIMIT 1;
+
+        IF v_id_solicitud IS NOT NULL THEN
+            INSERT INTO public.tcompletados_pruebas (
+                id_solicitud,
+                id_estudiante,
+                id_resultado,
+                timestamp_completado
+            ) VALUES (
+                v_id_solicitud,
+                NEW.id_estudiante,
+                NEW.id,
+                NOW()
+            )
+            ON CONFLICT (id_solicitud, id_estudiante) DO NOTHING;
+        END IF;
+
+    -- CASO B: El test vuelve a estar en 'Proceso' (Reinicio administrativo)
+    -- Si el registro existía en facturación, lo borramos inmediatamente.
+    ELSIF (NEW.estado = 'Proceso') THEN
+        DELETE FROM public.tcompletados_pruebas 
+        WHERE id_estudiante = NEW.id_estudiante 
+          AND id_resultado = NEW.id;
+    END IF;
+
+    RETURN NEW;
+END;
+$function$
+",null
+FUNCTION,vaciar_grupo_estudiantes,p_grupo_id integer,"CREATE OR REPLACE FUNCTION public.vaciar_grupo_estudiantes(p_grupo_id integer)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    r_id UUID;
+BEGIN
+    FOR r_id IN SELECT id FROM public.testudiantes WHERE id_grupo = p_grupo_id LOOP
+        PERFORM eliminar_estudiante_completo(r_id);
+    END LOOP;
+END;
+$function$
+",null
+FUNCTION,validar_acceso_sistema,"p_identificacion text, p_tipodoc text, p_password text","CREATE OR REPLACE FUNCTION public.validar_acceso_sistema(p_identificacion text, p_tipodoc text, p_password text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE v_usuario RECORD;
+BEGIN
+    SELECT * INTO v_usuario FROM public.v_perfil_usuario WHERE identificacion = p_identificacion AND tipodoc = p_tipodoc;
+    IF v_usuario IS NULL THEN RETURN jsonb_build_object('status', 'error', 'message', 'Usuario no encontrado o credenciales inválidas.'); END IF;
+    IF v_usuario.estado != 'Activo' THEN RETURN jsonb_build_object('status', 'error', 'message', 'La cuenta se encuentra inactiva. Contacte al administrador.'); END IF;
+    IF v_usuario.password_hash IS NULL OR v_usuario.password_hash = p_password THEN
+        RETURN jsonb_build_object('status', 'success', 'user', jsonb_build_object('id', v_usuario.id, 'nombre', v_usuario.nombre, 'rol', v_usuario.rol, 'identificacion', v_usuario.identificacion, 'tipodoc', v_usuario.tipodoc, 'nombre_institucion', v_usuario.nombre_institucion, 'estado', v_usuario.estado, 'debe_cambiar_password', v_usuario.debe_cambiar_password));
+    ELSE RETURN jsonb_build_object('status', 'error', 'message', 'Contraseña incorrecta.'); END IF;
+END; $function$
+",null
+RLS_POLICY,tcolegios,Lectura colegios restringida,SELECT FOR {authenticated},null
+RLS_POLICY,tcompletados_pruebas,Completados restringidos,SELECT FOR {public},null
+RLS_POLICY,tdepartamentos,Lectura pública departamentos,SELECT FOR {public},null
+RLS_POLICY,testudiantes,Lectura estudiantes restringida,SELECT FOR {authenticated},null
+RLS_POLICY,tfacturas,Facturas restringidas,SELECT FOR {public},null
+RLS_POLICY,tgrados,Lectura pública grados,SELECT FOR {public},null
+RLS_POLICY,tgrupos,Grupos restringidos,SELECT FOR {public},null
+RLS_POLICY,tprecios,tprecios_write_solo_admin,ALL FOR {authenticated},"USING: (EXISTS ( SELECT 1
+   FROM tusuario
+  WHERE ((tusuario.id = auth.uid()) AND ((tusuario.rol)::text = 'admin'::text)))) | WITH CHECK: (EXISTS ( SELECT 1
+   FROM tusuario
+  WHERE ((tusuario.id = auth.uid()) AND ((tusuario.rol)::text = 'admin'::text))))"
+RLS_POLICY,tprecios,tprecios_select_autenticados,SELECT FOR {authenticated},null
+RLS_POLICY,tpreguntas,Lectura preguntas autenticados,SELECT FOR {authenticated},null
+RLS_POLICY,tpruebas,Lectura pruebas autenticados,SELECT FOR {authenticated},null
+RLS_POLICY,tresultados,Resultados restringidos,SELECT FOR {public},null
+RLS_POLICY,tsolicitudes_aplicacion,tsolicitudes_auth_select,SELECT FOR {authenticated},null
+RLS_POLICY,tsolicitudes_aplicacion,tsolicitudes_auth_insert,INSERT FOR {authenticated},null
+RLS_POLICY,tsolicitudes_aplicacion,tsolicitudes_anon_insert,INSERT FOR {anon},null
+RLS_POLICY,tsolicitudes_aplicacion,tsolicitudes_auth_update,UPDATE FOR {authenticated},USING: true | WITH CHECK: true
+RLS_POLICY,tsolicitudes_aplicacion,tsolicitudes_auth_delete,DELETE FOR {authenticated},null
+RLS_POLICY,tusuario,Lectura perfiles vinculados,SELECT FOR {authenticated},null
+RLS_POLICY,tusuario,Bloquear insercion anon,INSERT FOR {public},null
+RLS_POLICY,tusuario,Bloquear actualizacion anon,UPDATE FOR {public},null
+RLS_POLICY,tvalores,Valores restringidos,SELECT FOR {public},null

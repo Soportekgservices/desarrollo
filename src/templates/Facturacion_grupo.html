@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factura {{numeroFactura}} - Edueficiente</title>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* ─── VARIABLES (Basadas en tu referencia) ─── */
+        :root {
+            --ancho-carta: 21.59cm;
+            --alto-carta: 27.94cm;
+            --azul-oscuro:   #1A3A5C;
+            --azul-medio:    #2563A8;
+            --azul-claro:    #D6E8F7;
+            --azul-palido:   #EDF4FC;
+            --acento-verde:  #0F7A6B;
+            --acento-claro:  #D0EDE9;
+            --gris-texto:    #2D3748;
+            --gris-suave:    #718096;
+            --gris-linea:    #CBD5E0;
+            --blanco:        #FFFFFF;
+            --fuente-texto:  'DM Sans', sans-serif;
+            --fuente-titulo: 'Source Serif 4', serif;
+        }
+
+        /* ─── CONFIGURACIÓN DE PÁGINA (A4) ─── */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background: #e8edf3;
+            font-family: var(--fuente-texto);
+            color: var(--gris-texto);
+            font-size: 9pt;
+            line-height: 1.4;
+        }
+
+        .pagina {
+            width: var(--ancho-carta);
+            min-height: var(--alto-carta);
+            background: var(--blanco);
+            margin: 1cm auto;
+            padding: 1.5cm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        @media print {
+            @page { size: letter; margin: 0; }
+            body, html { background: white; margin: 0; padding: 0; }
+            .pagina { 
+                margin: 0; 
+                box-shadow: none; 
+                width: var(--ancho-carta); 
+            }
+            .no-print { display: none; }
+        }
+
+        /* ─── CABECERA ─── */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid var(--azul-oscuro);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .logo-area { display: flex; align-items: center; gap: 15px; }
+        .logo-img {
+            /* AJUSTA EL TAMAÑO DEL LOGO AQUÍ */
+            width: 100px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .header-title h1 {
+            font-family: var(--fuente-titulo);
+            font-size: 16pt;
+            color: var(--azul-oscuro);
+        }
+
+        .invoice-badge {
+            background: var(--azul-oscuro);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 11pt;
+        }
+
+        /* ─── BLOQUES DE DATOS ─── */
+        .grid-datos {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .caja-info {
+            background: var(--azul-palido);
+            border: 1px solid var(--azul-claro);
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .label {
+            font-size: 7pt;
+            text-transform: uppercase;
+            color: var(--gris-suave);
+            font-weight: 700;
+            display: block;
+        }
+
+        .valor {
+            font-size: 9.5pt;
+            font-weight: 600;
+            color: var(--azul-oscuro);
+        }
+
+        /* ─── SECCIÓN FINANCIERA ─── */
+        .seccion-titulo {
+            font-family: var(--fuente-titulo);
+            font-size: 10pt;
+            font-weight: 600;
+            color: white;
+            background: var(--azul-oscuro);
+            padding: 5px 12px;
+            border-radius: 4px 4px 0 0;
+        }
+
+        .seccion-titulo.verde { background: var(--acento-verde); }
+
+        .resumen-financiero {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .cuerpo-tabla {
+            border: 1px solid var(--gris-linea);
+            border-top: none;
+            padding: 12px;
+            background: white;
+            min-height: 100px;
+        }
+
+        .fila-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px dashed var(--gris-linea);
+        }
+
+        .total-monto {
+            font-size: 16pt;
+            font-weight: 800;
+            color: var(--acento-verde);
+        }
+
+        /* ─── LISTADO DE ESTUDIANTES (PARA 100 PERSONAS) ─── */
+        .estudiantes-container {
+            margin-bottom: 20px;
+        }
+
+        .estudiantes-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 columnas para ahorrar espacio */
+            column-gap: 15px;
+            row-gap: 4px;
+            border: 1px solid var(--gris-linea);
+            border-top: none;
+            padding: 10px;
+        }
+
+        .estudiante-item {
+            display: flex;
+            align-items: center;
+            font-size: 8pt;
+            padding: 3px 5px;
+            border-bottom: 1px solid #f0f4f8;
+        }
+
+        .dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+
+        .dot-real { background: var(--acento-verde); }
+        .dot-estimado { background: #CBD5E0; border: 1px solid var(--gris-suave); }
+
+        .nombre-est {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .status-text {
+            font-size: 6.5pt;
+            font-weight: bold;
+            margin-left: auto;
+            text-transform: uppercase;
+        }
+
+        /* ─── FOOTER ─── */
+        .footer-factura {
+            margin-top: 30px;
+            border-top: 1px solid var(--gris-linea);
+            padding-top: 15px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+        }
+
+        .terminos {
+            font-size: 7.5pt;
+            color: var(--gris-suave);
+            padding-right: 40px;
+        }
+
+        .firma-box {
+            border-top: 1px solid var(--azul-oscuro);
+            margin-top: 30px;
+            text-align: center;
+            font-size: 8pt;
+            padding-top: 5px;
+        }
+
+        .nota-impresion {
+            text-align: center;
+            font-size: 7pt;
+            color: var(--gris-suave);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="no-print" style="text-align: center; padding: 20px; display: flex; justify-content: center; gap: 15px;">
+    <button id="btnVolverFacturacion" style="padding: 10px 20px; cursor: pointer; background: var(--gris-suave); color: white; border: none; border-radius: 5px; font-weight: bold;">← Volver</button>
+    <button onclick="window.print()" style="padding: 10px 20px; cursor: pointer; background: var(--acento-verde); color: white; border: none; border-radius: 5px; font-weight: bold;">🖨️ Imprimir Factura</button>
+</div>
+
+<div class="pagina">
+    <!-- HEADER -->
+    <header class="header">
+        <div class="logo-area">
+            <img src="https://github.com/Soportekgservices/EduEficiente/blob/main/Logo_edueficiente.png?raw=true" class="logo-img" alt="Logo">
+            <div class="header-title">
+                <h1>Factura de servicios por grupo</h1>
+                <p style="font-size: 8pt; color: var(--gris-suave);">Sistema de Gestión y Recaudo Educativo Edueficiente</p>
+            </div>
+        </div>
+        <div style="text-align: right;">
+            <div class="invoice-badge">{{numeroFactura}}</div>
+            <p style="margin-top: 5px; font-weight: bold; color: var(--gris-suave);">Fecha: {{fechaEmision}}</p>
+        </div>
+    </header>
+
+    <!-- DATOS DE CLIENTE -->
+    <div class="grid-datos">
+        <div class="caja-info">
+            <span class="label">Distribuidor</span>
+            <span class="valor">{{distribuidorNombre}} (ID: {{distribuidorId}})</span>
+        </div>
+        <div class="caja-info">
+            <span class="label">Institución</span>
+            <span class="valor">{{colegioNombre}}</span>
+        </div>
+        <div class="caja-info">
+            <p style="font-size: 12pt; font-weight: 800; color: var(--azul-oscuro); margin: 2px 0 6px 0;">
+                <strong>Grado:</strong> {{ grado }} | 
+                <strong>Grupo:</strong> {{ grupo }}
+            </p>
+            <span class="label">Ubicación</span>
+            <span class="valor">{{colegioUbicacion}}</span>
+        </div>
+    </div>
+
+    <!-- RESUMEN FINANCIERO -->
+    <div class="resumen-financiero">
+        <div class="bloque" style="grid-column: span 2;">
+            <div class="seccion-titulo verde">Detalles de factura</div>
+            <div class="cuerpo-tabla">
+                <p style="font-size: 8pt; color: var(--gris-suave);">Resumen de cobro basado en la ejecución del servicio.</p>
+                <div style="margin-top:10px;">
+                    <table style="width: 100%; font-size: 10pt;">
+                        <tr>
+                            <td>Estudiantes Autorizados:</td>
+                            <td style="text-align:right"><strong>{{estudiantesAutorizados}}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Estudiantes que completaron:</td>
+                            <td style="text-align:right"><strong>{{realCant}}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Costo por estudiante (Precio establecido):</td>
+                            <td style="text-align:right">${{costoPorEstudiante}}</td>
+                        </tr>
+                        <tr style="border-top: 1px solid #eee; height: 35px; vertical-align: bottom;"><td>Subtotal:</td><td style="text-align:right">${{subtotalReal}}</td></tr>
+                        <tr><td>IVA aplicado ({{impuestoPorc}}%):</td><td style="text-align:right">+${{impuestoReal}}</td></tr>
+                        <tr style="color: #e63946;"><td>Descuento aplicado:</td><td style="text-align:right">-${{descuentoReal}}</td></tr>
+                    </table>
+                </div>
+                <div class="fila-total">
+                    <span style="font-weight:bold; color: var(--acento-verde);">TOTAL A PAGAR:</span>
+                    <span class="total-monto">${{realTotal}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LISTADO DE ESTUDIANTES (ESCALABLE) -->
+    <div class="estudiantes-container">
+        <div class="seccion-titulo">Anexo: Listado de Estudiantes Procesados</div>
+        <div class="estudiantes-grid">
+            {{{estudiantesHtml}}}
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer-factura">
+        <div class="terminos">
+            <p><strong>Términos y condiciones:</strong></p>
+            <p>Esta factura corresponde a los servicios de evaluación prestados durante el ciclo mayo 2026. Los valores "Estimados" son solo de referencia proyectual. El pago debe realizarse sobre el "Total Real". Favor consignar en la cuenta institucional autorizada.</p>
+        </div>
+        <div>
+            <div class="firma-box">
+                Firma Autorizada
+            </div>
+        </div>
+    </div>
+
+    <div class="nota-impresion">
+        Documento generado electrónicamente para fines contables. Impreso el {{fechaEmision}}. Página 1 de 1.
+    </div>
+</div>
+</body>
+</html>

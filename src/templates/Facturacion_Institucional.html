@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consolidado {{numeroReferencia}} - Edueficiente</title>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* ─── VARIABLES (Basadas en tu referencia) ─── */
+        :root {
+            --ancho-carta: 21.59cm;
+            --alto-carta: 27.94cm;
+            --azul-oscuro:   #1A3A5C;
+            --azul-medio:    #2563A8;
+            --azul-claro:    #D6E8F7;
+            --azul-palido:   #EDF4FC;
+            --acento-verde:  #0F7A6B;
+            --acento-claro:  #D0EDE9;
+            --gris-texto:    #2D3748;
+            --gris-suave:    #718096;
+            --gris-linea:    #CBD5E0;
+            --blanco:        #FFFFFF;
+            --fuente-texto:  'DM Sans', sans-serif;
+            --fuente-titulo: 'Source Serif 4', serif;
+        }
+
+        /* ─── CONFIGURACIÓN DE PÁGINA (A4) ─── */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background: #e8edf3;
+            font-family: var(--fuente-texto);
+            color: var(--gris-texto);
+            font-size: 9pt;
+            line-height: 1.4;
+        }
+
+        .pagina {
+            width: var(--ancho-carta);
+            min-height: var(--alto-carta);
+            background: var(--blanco);
+            margin: 1cm auto;
+            padding: 1.5cm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        @media print {
+            @page { size: letter; margin: 0; }
+            body, html { background: white; margin: 0; padding: 0; }
+            .pagina { margin: 0; box-shadow: none; width: var(--ancho-carta); border: none; padding: 1.2cm 1.5cm; }
+            .no-print, .btn-print-hide { display: none !important; }
+        }
+
+        /* ─── CABECERA ─── */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 3px solid var(--azul-oscuro);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .logo-area { display: flex; align-items: center; gap: 15px; }
+        .logo-img {
+            /* AJUSTA EL TAMAÑO DEL LOGO AQUÍ */
+            width: 100px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .header-title h1 {
+            font-family: var(--fuente-titulo);
+            font-size: 16pt;
+            color: var(--azul-oscuro);
+        }
+
+        .invoice-badge {
+            background: var(--azul-oscuro);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 10pt;
+            text-align: center;
+        }
+
+        /* ─── BLOQUES DE DATOS ─── */
+        .grid-datos {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--azul-claro);
+            border-radius: 4px;
+            padding: 12px;
+        }
+
+        .caja-info {
+            flex: 1;
+            padding-right: 15px;
+        }
+
+        .label {
+            font-size: 7pt;
+            text-transform: uppercase;
+            color: var(--azul-medio);
+            font-weight: 700;
+            display: block;
+        }
+
+        .valor {
+            font-size: 9.5pt;
+            font-weight: 600;
+            color: var(--azul-oscuro);
+        }
+
+        /* ─── SECCIÓN FINANCIERA ─── */
+        .seccion-titulo {
+            font-family: var(--fuente-titulo);
+            font-size: 10pt;
+            font-weight: 600;
+            color: white;
+            background: var(--azul-oscuro);
+            padding: 10px 15px;
+            border-radius: 4px 4px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .seccion-titulo.verde { background: var(--acento-verde); }
+
+        .resumen-ejecucion {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .metrica-card {
+            background: var(--azul-palido);
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid var(--azul-claro);
+            text-align: center;
+        }
+
+        .metrica-card .m-label { font-size: 7.5pt; color: var(--azul-medio); font-weight: 700; text-transform: uppercase; }
+        .metrica-card .m-valor { font-size: 14pt; font-weight: 800; color: var(--azul-oscuro); display: block; }
+
+        /* ─── TABLA DE GRADOS ─── */
+        .tabla-institucional {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9pt;
+        }
+        .tabla-institucional th {
+            background: var(--azul-palido);
+            color: var(--azul-oscuro);
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 2px solid var(--azul-medio);
+            text-transform: uppercase;
+            font-size: 7.5pt;
+        }
+        .tabla-institucional th.center { text-align: center; }
+        .tabla-institucional th.right { text-align: right; }
+
+        .tabla-institucional td {
+            padding: 10px;
+            border-bottom: 1px solid var(--gris-linea);
+        }
+        .tabla-institucional .row-destacada { background: #fcfcfc; font-weight: 600; }
+
+        .tabla-institucional tr:last-child td {
+            border-bottom: none;
+        }
+
+        .cuerpo-tabla {
+            border: 1px solid var(--gris-linea);
+            border-top: none;
+            padding: 12px;
+            background: white;
+            min-height: 100px;
+        }
+
+        .fila-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px solid var(--azul-medio);
+        }
+
+        .total-monto {
+            font-size: 20pt;
+            font-weight: 800;
+            color: var(--acento-verde);
+        }
+
+        /* ─── FOOTER ─── */
+        .footer-factura {
+            margin-top: 30px;
+            border-top: 1px solid var(--gris-linea);
+            padding-top: 15px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+        }
+
+        .terminos {
+            font-size: 7.5pt;
+            color: var(--gris-suave);
+            padding-right: 40px;
+        }
+
+        .firma-box {
+            border-top: 1px solid var(--azul-oscuro);
+            margin-top: 30px;
+            width: 200px;
+            text-align: center;
+            font-size: 7.5pt;
+            padding-top: 5px;
+        }
+
+        .nota-impresion {
+            text-align: center;
+            font-size: 7pt;
+            color: var(--gris-suave);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="no-print" style="text-align: center; padding: 20px; display: flex; justify-content: center; gap: 15px;">
+    <button id="btnVolverFacturacion" style="padding: 10px 20px; cursor: pointer; background: var(--gris-suave); color: white; border: none; border-radius: 5px; font-weight: bold;">← Volver</button>
+    <button onclick="window.print()" style="padding: 10px 20px; cursor: pointer; background: var(--acento-verde); color: white; border: none; border-radius: 5px; font-weight: bold;">🖨️ Imprimir Factura</button>
+</div>
+
+<div class="pagina">
+    <!-- HEADER -->
+    <header class="header">
+        <div class="logo-area">
+            <img src="https://github.com/Soportekgservices/EduEficiente/blob/main/Logo_edueficiente.png?raw=true" class="logo-img" alt="Logo">
+            <div class="header-title">
+                <h1>Factura de Cobro Institucional</h1>
+                <p style="font-size: 8pt; color: var(--gris-suave);">Consolidado Global de Servicios Educativos Edueficiente</p>
+            </div>
+        </div>
+        <div style="text-align: right;">
+            <div class="invoice-badge">REF: {{numeroReferencia}}</div>
+            <p style="margin-top: 5px; font-weight: bold; color: var(--gris-suave);">Fecha: {{fechaEmision}}</p>
+        </div>
+    </header>
+
+    <!-- DATOS DE CLIENTE -->
+    <div class="grid-datos">
+        <div class="caja-info">
+            <span class="label">Distribuidor</span>
+            <span class="valor">{{distribuidorNombre}}</span>
+            <p style="font-size: 7.5pt; color: var(--gris-suave);">Consultor Educativo Independiente</p>
+        </div>
+        <div class="caja-info">
+            <span class="label">Institución</span>
+            <span class="valor">{{colegioNombre}}</span>
+            <p style="font-size: 7.5pt; color: var(--gris-suave);">{{colegioUbicacion}}</p>
+        </div>
+    </div>
+
+    <!-- MÉTRICAS DE IMPACTO -->
+    <div class="resumen-ejecucion">
+        <div class="metrica-card">
+            <span class="m-label">Total Estudiantes</span>
+            <span class="m-valor">{{totalEstudiantes}}</span>
+        </div>
+        <div class="metrica-card">
+            <span class="m-label">Grupos Asignados</span>
+            <span class="m-valor">{{gruposAsignados}}</span>
+        </div>
+        <div class="metrica-card">
+            <span class="m-label">Pruebas Aplicadas</span>
+            <span class="m-valor">{{pruebasAplicadas}}</span>
+        </div>
+    </div>
+
+    <!-- RESUMEN FINANCIERO -->
+    <div class="seccion-wrap">
+        <div class="seccion-titulo verde">
+            <span>Desglose por Niveles y Servicios</span>
+            <span style="font-size: 7.5pt; font-weight: normal; opacity: 0.9;">Valores expresados en Pesos Colombianos (COP)</span>
+        </div>
+        <div class="cuerpo-tabla">
+            <table class="tabla-institucional">
+                <thead>
+                    <tr>
+                        <th>Grado / Grupo</th>
+                        <th>Concepto de Servicio</th>
+                        <th style="text-align: center;">Cant. Est.</th>
+                        <th style="text-align: right;">Unitario</th>
+                        <th style="text-align: right;">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{{filasHtml}}}
+                </tbody>
+            </table>
+
+            <div class="fila-total">
+                <div>
+                    <span style="display: block; font-size: 7.5pt; color: var(--gris-suave);">VALOR EN LETRAS:</span>
+                    <span style="font-weight: bold; color: var(--azul-oscuro);">{{totalLetras}}</span>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-weight:bold; color: var(--acento-verde); font-size: 11pt;">VALOR TOTAL CONSOLIDADO:</span>
+                    <div class="total-monto">${{totalConsolidado}}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer-factura">
+        <div class="terminos">
+            <p><strong>Términos y condiciones:</strong></p>
+            <p>Este documento constituye el reporte consolidado de ejecución de servicios para la institución. Los valores reflejan el licenciamiento por estudiante procesado satisfactoriamente en plataforma. El pago debe realizarse mediante transferencia bancaria a la cuenta de ahorros autorizada.</p>
+        </div>
+        <div>
+            <div class="firma-box">
+                Firma Autorizada
+            </div>
+        </div>
+    </div>
+
+    <div class="nota-impresion">
+        Documento generado electrónicamente para fines contables. Impreso el {{fechaEmision}}. Página 1 de 1.
+    </div>
+</div>
+</body>
+</html>

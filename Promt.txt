@@ -1,0 +1,91 @@
+PROMPT 1 — SOLO COMPRENSIÓN
+Analiza completamente el proyecto Edueficiente.
+
+Revisa:
+- todos los archivos JS
+- HTML
+- supabaseClient.js
+- el archivo "Situacion actual base de datos.txt"
+
+NO generes cambios.
+
+Tu objetivo es únicamente:
+
+1. identificar cómo se relacionan:
+   - estudiantes
+   - instituciones
+   - distribuidores
+   - rectores
+
+2. identificar:
+   - tablas usadas
+   - joins usados
+   - consultas Supabase
+   - relaciones esperadas por frontend
+
+3. detectar:
+   - qué módulos muestran estudiantes
+   - qué módulos dependen de relaciones institucionales
+
+NO propongas soluciones todavía.
+
+Finaliza con:
+"Contexto comprendido. Listo para auditoría relacional."
+
+
+
+
+
+Luego PROMPT 2
+
+SOLO auditoría.
+
+Usando el contexto ya analizado:
+
+Identifica exclusivamente:
+
+- relaciones que retornan null
+- joins bloqueados por RLS
+- consultas Supabase incompatibles con las políticas actuales
+- tablas visibles parcialmente
+- políticas que impiden visualizar estudiantes vinculados a instituciones
+
+NO propongas cambios todavía.
+
+Por cada problema entrega:
+
+- archivo afectado
+- consulta afectada
+- tabla involucrada
+- policy involucrada
+- causa raíz exacta
+
+
+
+
+
+
+
+Luego PROMPT 3
+
+Ahora sí reparación.
+
+Ahora propone únicamente soluciones mínimas y seguras para los problemas detectados.
+
+REGLAS:
+- NO desactivar RLS
+- NO usar USING (true)
+- NO debilitar seguridad
+- NO modificar módulos sanos
+
+Cada solución debe:
+- mantener seguridad
+- restaurar visualización
+- mantener relaciones funcionales
+- respetar políticas actuales
+
+Entrega:
+- cambio exacto
+- archivo exacto
+- policy exacta
+- validación posterior

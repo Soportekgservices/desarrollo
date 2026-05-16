@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title> Sistema Integral</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="src/styles/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- DESHABILITADO PARA PRUEBAS LOCALES: Descomenta la línea de abajo para volver a habilitar reCAPTCHA -->
+    <!-- <script src="https://www.google.com/recaptcha/api.js" async defer></script> -->
+</head>
+
+<body>
+    <section id="loginView" class="view-section active login-screen">
+        <div class="navbar-login">
+            <div class="logo-login"><img
+                    src="https://github.com/Soportekgservices/EduEficiente/blob/main/Edueficiente.png?raw=true"
+                    alt="EduEficiente Logo"></div>
+            <div class="menu-login">
+                <a href="#">Inicio</a>
+                <a href="#">Nosotros</a>
+                <a href="#">Servicios</a>
+                <a href="#" class="ingresa-btn">Ingresa</a>
+            </div>
+        </div>
+        <div class="wrapper-login">
+            <div class="card-login">
+                <div class="left-login">
+                    <div class="image-placeholder-login">
+                        <img src="https://github.com/Soportekgservices/EduEficiente/blob/main/Imagen%20Login.jpg?raw=true"
+                            alt="Ilustración">
+                    </div>
+                </div>
+                <div class="right-login">
+                    <div class="login-box-container">
+                        <h2>BIENVENIDO</h2>
+                        <p>Portal Único de Acceso Vocacional</p>
+                        <div id="userWelcomeInfo"
+                            style="margin-bottom: 15px; font-size: 0.9rem; color: var(--primary);"></div>
+                        <div class="input-group-login">
+                            <select id="lTipoDoc">
+                                <option value="">Tipo de Documento</option>
+                                <option value="C.C">Cédula de Ciudadanía (C.C)</option>
+                                <option value="TI">Tarjeta de Identidad (TI)</option>
+                                <option value="C.E">Cédula de Extranjería (C.E)</option>
+                                <option value="EXT">Pasaporte / Extranjería (EXT)</option>
+                                <option value="PPT">Permiso Temporal (PPT)</option>
+                            </select>
+                        </div>
+                        <div class="input-group-login">
+                            <input type="text" id="lId" placeholder="Número de Identificación">
+                        </div>
+                        <div id="passwordArea" class="input-group-login" style="display:none;">
+                            <input type="password" id="lPass" placeholder="Contraseña">
+                        </div>
+                        <!-- DESHABILITADO PARA PRUEBAS LOCALES: Descomenta el div de abajo para habilitar el widget visual -->
+                        <!-- <div id="captcha-container" class="g-recaptcha" data-sitekey="6LeImeUsAAAAAKp5_oCAyZ8mp8ozD64V1ArU9v4n" style="margin-bottom: 15px; display: none;"></div> -->
+
+                        <div class="options-login">
+                            <label><input type="checkbox"> Recordarme</label>
+                            <a href="#">¿Olvidaste tu ID?</a>
+                        </div>
+                        <button id="btnAuth" class="btn-login-action" onclick="authStepOne()">CONTINUAR</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div id="appContainer" class="app-container">
+        <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+        <aside class="sidebar">
+            <button class="close-sidebar-btn" onclick="toggleSidebar()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h2>Bienvenido</h2>
+            <nav id="roleMenu" class="nav-menu"></nav>
+            <div class="sidebar-logout">
+                <div class="nav-item logout-item" onclick="logout()">
+                    <i class="fa-solid fa-power-off"></i> Salir del Sistema
+                </div>
+            </div>
+        </aside>
+        <main class="main-content">
+            <header class="header-top">
+                <div class="header-title-group">
+                    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div class="header-title-text">
+                        <h1 id="pageTitle" class="page-title"></h1>
+                        <p id="pageDesc" class="page-desc"></p>
+                    </div>
+                </div>
+                <div class="header-actions-group">
+                    <div id="studentHelpTools" class="student-help-tools" style="display:none;">
+                        <div class="support-label">
+                            <i class="fa-solid fa-headset" style="color: var(--primary);"></i> Soporte:
+                            <a href="https://wa.me/573000000000" target="_blank" rel="noopener noreferrer"
+                                style="text-decoration: none;">
+                                <strong style="color: var(--text-main);">+57 300 000 0000</strong>
+                            </a>
+                        </div>
+                        <button id="btnVerBienvenida" class="btn-action btn-bienvenida" style="display: none;"
+                            title="Ver portada de nuevo" onclick="showWelcomeAgain()">
+                            <i class="fa-solid fa-eye"></i> Bienvenida
+                        </button>
+                    </div>
+                    <div id="headerNotifWrap" class="header-notif-wrap" style="display:none;"
+                        title="Resumen de actividad">
+                        <i class="fa-solid fa-bell"></i>
+                        <span id="headerNotifCount" class="header-notif-count" style="display:none;">0</span>
+                    </div>
+                    <div class="user-profile">
+                        <div class="user-info-text">
+                            <span id="userName" style="font-weight: 700; display: block;"></span>
+                            <span id="userTag" style="font-size: 0.75rem; color: var(--secondary);"></span>
+                        </div>
+                        <div id="userAvatar" class="user-avatar"></div>
+                    </div>
+                </div>
+            </header>
+            <div id="dynamicBoard" class="bento-grid"></div>
+        </main>
+    </div>
+    <!-- Librería para leer archivos Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="src/js/supabaseClient.js"></script>
+    <script src="src/js/utils.js"></script>
+    <script src="src/js/auth.js"></script>
+    <script src="src/js/dashboard.js"></script>
+    <script src="src/js/test.js"></script>
+    <script src="src/js/facturacion.js"></script>
+    <script>
+        // Control global de Sidebar en móviles
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('active');
+            document.body.classList.toggle('sidebar-active');
+        }
+
+        // Auto-envuelve tablas generadas por JS con .card-table-wrapper
+        // para habilitar scroll horizontal sin romper el layout de .card
+        function wrapTablesInCards() {
+            document.querySelectorAll('.card .data-table, .card .student-table').forEach(table => {
+                if (table.parentElement.classList.contains('card-table-wrapper')) return;
+                const wrapper = document.createElement('div');
+                wrapper.className = 'card-table-wrapper';
+                table.parentNode.insertBefore(wrapper, table);
+                wrapper.appendChild(table);
+            });
+        }
+
+        // Observa cambios en el bento grid (contenido dinámico del dashboard)
+        const observer = new MutationObserver(() => wrapTablesInCards());
+        const board = document.getElementById('dynamicBoard');
+        if (board) {
+            observer.observe(board, { childList: true, subtree: true });
+        }
+    </script>
+</body>
+
+</html>
