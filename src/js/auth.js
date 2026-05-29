@@ -13,104 +13,52 @@ const SESSION_KEY = 'edueficiente_session';
 // SISTEMA DE AUTENTICACIÓN Y ACCESO
 // ==========================================
 
-async function authStepOne() {
+async function authenticateUser() {
     const tipodoc = document.getElementById('lTipoDoc').value;
-    const id = document.getElementById('lId').value;
-
-    if (!tipodoc || !id) return alert("Selecciona tu tipo de documento e ingresa tu identificación.");
-
-    // Validación de Google reCAPTCHA inicial
-    if (window.grecaptcha) {
-        const response = grecaptcha.getResponse();
-        if (!response) {
-            return alert("Por favor, completa el captcha de seguridad para continuar.");
-        }
-    }
-
-    // Consultamos la VISTA para obtener datos del perfil e institución en un solo viaje
-    // REFUERZO SEGURIDAD: Usar RPC para obtener perfil público sin password_hash
-    const { data: rpcRes, error: rpcError } = await _s.rpc('obtener_perfil_usuario_publico', {
-        p_identificacion: id,
-        p_tipodoc: tipodoc
-    });
-
-    if (rpcError || rpcRes.status === 'error') {
-        return alert(rpcRes?.message || "Error de acceso: " + rpcError?.message);
-    }
-
-    const data = rpcRes.user;
-
-    if (!data) { // Aunque el RPC ya maneja esto, es una doble verificación
-        return alert("Usuario no encontrado. Verifique sus datos.");
-    }
-
-    // Guardamos el usuario encontrado temporalmente
-    window.tempUser = data;
-
-    // Mostramos información de bienvenida
-    const welcomeDiv = document.getElementById('userWelcomeInfo');
-    welcomeDiv.innerHTML = '👋 Hola, <strong>' + data.nombre + '</strong>.<br>Vas a ingresar como <strong>' + data.rol.toUpperCase() + '</strong> de <strong>' + data.nombre_institucion + '</strong>.';
-
-    // Si el usuario no tiene contraseña, le avisamos que debe crear una
-    if (data.tiene_password === false || data.debe_cambiar_password === true) {
-        document.getElementById('lPass').placeholder = "Crea tu nueva contraseña";
-        welcomeDiv.innerHTML += '<br><span style="color:var(--danger); font-weight:600;">⚠️ Debes establecer tu contraseña para continuar.</span>';
-    }
-
-    // Cambiamos la UI para el paso de contraseña
-    document.getElementById('passwordArea').style.display = 'block';
-    document.getElementById('lTipoDoc').disabled = true;
-    document.getElementById('lId').disabled = true;
-    
-    const btn = document.getElementById('btnAuth');
-    btn.innerText = "INGRESAR AL SISTEMA";
-    btn.setAttribute('onclick', 'authStepTwo()');
-}
-
-async function authStepTwo() {
+    const id = document.getElementById('lId').value.trim();
     const pass = document.getElementById('lPass').value;
-    const user = window.tempUser;
 
-    if (!pass) return alert("Por favor, ingresa tu contraseña.");
+    if (!tipodoc || !id || !pass) return alert("Por favor, completa todos los campos (Documento, Identificación y Contraseña).");
 
-    // Validación de Google reCAPTCHA
+    // 1ra BARRERA: Validación de Google reCAPTCHA en el cliente
+    let captchaToken = null;
     if (window.grecaptcha) {
-        const response = grecaptcha.getResponse();
-        if (!response) {
+        captchaToken = grecaptcha.getResponse();
+        if (!captchaToken) {
             return alert("Por favor, completa el captcha de seguridad para continuar.");
         }
+    } else {
+        return alert("El sistema de seguridad reCAPTCHA no se ha cargado correctamente.");
     }
 
-    // REFUERZO SEGURIDAD: Validación en servidor mediante RPC
-    const { data: res, error: rpcError } = await _s.rpc('validar_acceso_sistema', {
-        p_identificacion: user.identificacion,
-        p_tipodoc: user.tipodoc,
-        p_password: pass
+    // 2da BARRERA: Llamada a la RPC unificada
+    const { data: res, error: rpcError } = await _s.rpc('login_unificado', {
+        p_identificacion: id,
+        p_tipodoc: tipodoc,
+        p_password: pass,
+        p_captcha_token: captchaToken
     });
 
     if (rpcError || res.status === 'error') {
-        if (window.grecaptcha) grecaptcha.reset(); // Reiniciar si la contraseña es incorrecta
-        return alert(res?.message || "Error de autenticación.");
+        if (window.grecaptcha) grecaptcha.reset(); // Reiniciar para un nuevo intento
+        return alert(res?.message || rpcError?.message || "Error de autenticación.");
     }
 
-    // Si el usuario es nuevo, marcamos que ya estableció su clave
+    // Si el usuario es nuevo y no tenía contraseña, la base de datos devuelve debe_cambiar_password = true
     if (res.user.debe_cambiar_password) {
-        // REFUERZO SEGURIDAD: Usar RPC para guardar contraseña sin permisos de tabla
+        // Guardamos la contraseña que acaba de escribir
         const { data: pwRes, error: pwErr } = await _s.rpc('establecer_password_usuario', {
             p_usuario_id: String(res.user.id),
             p_password: pass
         });
         if (pwErr || pwRes?.status === 'error') {
-            // Si falla porque ya fue establecida (debe_cambiar_password ya es false en DB),
-            // continuamos igual — el usuario ya tiene contraseña válida
             console.warn('establecer_password_usuario:', pwErr?.message || pwRes?.message);
         }
         res.user.debe_cambiar_password = false;
     }
 
-    // Login Exitoso: Usamos el objeto devuelto por el servidor (ya no contiene el hash)
+    // Login Exitoso
     sess = res.user;
-    // Guardar en el almacenamiento local para persistencia (F5)
     localStorage.setItem(SESSION_KEY, JSON.stringify(sess));
     
     document.getElementById('loginView').classList.remove('active');
@@ -127,6 +75,8 @@ async function authStepTwo() {
     
     notifPollTimer = setInterval(refreshNotifBadges, 90000);
     setTimeout(() => refreshNotifBadges(), 400);
+
+    if (window.grecaptcha) grecaptcha.reset();
 }
 
 function backToSchoolList() {
