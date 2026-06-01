@@ -1,3 +1,8 @@
+// ── Carga Masiva: estado de edición en el Panel de Depuración ──────────────
+let jsonOriginal = [];        // Copia del JSON leído del Excel (se actualiza con ediciones)
+let cambiosPendientes = [];   // [{identificacion, campo, anterior, nuevo, timestamp}]
+// ──────────────────────────────────────────────────────────────────────────
+
 function adminMenuHtml(active) {
     const m = (key) => active === key ? 'nav-item active' : 'nav-item';
     return `
@@ -956,16 +961,66 @@ async function loadDepts() {
 }
 
 async function deleteSchool(id) {
-    if(!confirm("¿Estás seguro de eliminar esta institución? Esta acción borrará permanentemente todos los grupos, estudiantes y resultados asociados.")) return;
-    
-    // REFUERZO SEGURIDAD: Eliminación via RPC con validación de rol
-    const { data: res, error: rpcError } = await _s.rpc('eliminar_entidad_sistema', {
-        p_tabla: 'tcolegios',
-        p_id_entidad: id.toString(),
-        p_solicitante_id: sess.id
+    if (!confirm("¿Estás seguro de eliminar esta institución? Esta acción borrará permanentemente todos los grupos, estudiantes y resultados asociados.")) return;
+
+    // 1. Obtener datos del colegio (incluye id_rector y lista de grados/grupos)
+    const { data: detRes, error: detErr } = await _s.rpc('obtener_detalle_colegio_seguro', {
+        p_usuario_id: String(sess.id),
+        p_colegio_id: String(id)
+    });
+    if (detErr) return alert("Error al obtener datos del colegio: " + detErr.message);
+    const colegio = detRes?.data || detRes;
+    const rectorId = colegio?.id_rector || null;
+
+    // 2. Obtener todos los grados del colegio para luego vaciar sus grupos
+    const { data: gradosRes, error: gradosErr } = await _s.rpc('obtener_grados_colegio_seguro', {
+        p_colegio_id: id
+    });
+    if (gradosErr) return alert("Error al obtener grados: " + gradosErr.message);
+    const grados = gradosRes?.data?.data || gradosRes?.data || [];
+
+    // 3. Por cada grado, obtener sus grupos y vaciarlos
+    for (const grado of grados) {
+        const { data: gruposRes, error: gruposErr } = await _s.rpc('obtener_grupos_grado_seguro', {
+            p_grado_id: String(grado.id),
+            p_colegio_id: String(id)
+        });
+        if (gruposErr) return alert("Error al obtener grupos del grado " + grado.nombre + ": " + gruposErr.message);
+        const grupos = gruposRes?.data?.data || gruposRes?.data || [];
+
+        for (const grupo of grupos) {
+            // Vaciar estudiantes (borra testudiantes + tusuario)
+            const { error: errVaciar } = await _s.rpc('vaciar_grupo_estudiantes', { p_grupo_id: grupo.id });
+            if (errVaciar) return alert("Error al vaciar grupo " + grupo.nombre + ": " + errVaciar.message);
+
+            // Eliminar el grupo vacío
+            const { data: rGrupo, error: errGrupo } = await _s.rpc('eliminar_entidad_sistema', {
+                p_tabla: 'tgrupos',
+                p_id_entidad: String(grupo.id),
+                p_solicitante_id: sess.id
+            });
+            if (errGrupo || rGrupo?.status === 'error') return alert("Error al eliminar grupo: " + (errGrupo?.message || rGrupo?.message));
+        }
+    }
+
+    // 4. Eliminar el rector si existe usando la función dedicada
+    // eliminar_rector_colegio hace: NULL en id_rector → borra trector → borra tusuario
+    if (rectorId) {
+        const { data: rRector, error: errRector } = await _s.rpc('eliminar_rector_colegio', {
+            p_colegio_id: parseInt(id),
+            p_rector_id:  rectorId,
+            p_usuario_id: sess.id
+        });
+        if (errRector || rRector?.status === 'error') return alert("Error al eliminar rector: " + (errRector?.message || rRector?.message));
+    }
+
+    // 5. Eliminar el colegio usando la función dedicada (admin o distribuidor propietario)
+    const { data: res, error: rpcError } = await _s.rpc('eliminar_colegio_completo', {
+        p_colegio_id: parseInt(id),
+        p_usuario_id: sess.id
     });
 
-    if(rpcError || res.status === 'error') alert("Error: " + (rpcError?.message || res?.message));
+    if (rpcError || res.status === 'error') alert("Error: " + (rpcError?.message || res?.message));
     else { alert("✅ Institución eliminada correctamente."); backToSchoolList(); }
 }
 
@@ -1268,6 +1323,16 @@ async function renderEditSolicitudForm(id) {
                     <input type="date" id="admEditFfin" value="${s.fecha_fin}">
                 </div>
 
+                <div class="input-box" style="margin:0;">
+                    <label>Hora de Inicio <span style="color:var(--secondary); font-size:0.8rem;">(opcional — franja horaria)</span></label>
+                    <input type="time" id="admEditHini" value="${s.hora_inicio ? s.hora_inicio.substring(0,5) : ''}">
+                </div>
+
+                <div class="input-box" style="margin:0;">
+                    <label>Hora de Fin <span style="color:var(--secondary); font-size:0.8rem;">(opcional)</span></label>
+                    <input type="time" id="admEditHfin" value="${s.hora_fin ? s.hora_fin.substring(0,5) : ''}">
+                </div>
+
                 <div class="input-box" style="grid-column: span 2; margin:0;">
                     <label>Notas de la Operación / Motivo de Rechazo</label>
                     <textarea id="admEditNotas" style="height:80px; resize:none;">${s.motivo_rechazo || ''}</textarea>
@@ -1286,22 +1351,33 @@ async function renderEditSolicitudForm(id) {
  * Ejecuta la actualización administrativa segura
  */
 async function saveAdministrativeSolicitudEdit(id) {
-    const estado = document.getElementById('admEditEstado').value;
+    const estado       = document.getElementById('admEditEstado').value;
     const fecha_inicio = document.getElementById('admEditFini').value;
-    const fecha_fin = document.getElementById('admEditFfin').value;
-    const motivo = document.getElementById('admEditNotas').value.trim();
+    const fecha_fin    = document.getElementById('admEditFfin').value;
+    const hora_inicio  = document.getElementById('admEditHini').value || null;
+    const hora_fin     = document.getElementById('admEditHfin').value || null;
+    const motivo       = document.getElementById('admEditNotas').value.trim();
 
     if (!fecha_inicio || !fecha_fin) return alert("Las fechas son obligatorias.");
     if (fecha_fin < fecha_inicio) return alert("La fecha de finalización no puede ser anterior a la de inicio.");
 
-    // REFUERZO SEGURIDAD: Sincronización de tipos para evitar Schema Cache Error
+    // Validar coherencia de horas
+    if ((hora_inicio && !hora_fin) || (!hora_inicio && hora_fin)) {
+        return alert("Si defines una franja horaria, debes especificar tanto la hora de inicio como la hora de fin.");
+    }
+    if (hora_inicio && hora_fin && fecha_inicio === fecha_fin && hora_fin <= hora_inicio) {
+        return alert("En el mismo día, la hora de fin debe ser posterior a la hora de inicio.");
+    }
+
     const { data: res, error } = await _s.rpc('gestionar_solicitud_aplicacion_segura', {
-        p_solicitud_id: String(id), // Convertir a String para bigint
-        p_estado: estado,
-        p_fecha_inicio: fecha_inicio || null, // Asegurar null si vacío
-        p_fecha_fin: fecha_fin || null,     // Asegurar null si vacío
+        p_solicitud_id:   String(id),
+        p_estado:         estado,
+        p_fecha_inicio:   fecha_inicio || null,
+        p_fecha_fin:      fecha_fin    || null,
+        p_hora_inicio:    hora_inicio,
+        p_hora_fin:       hora_fin,
         p_motivo_rechazo: motivo && motivo.trim() !== "" ? motivo.trim() : null,
-        p_admin_id: String(sess.id) // Convertir a String para uuid
+        p_admin_id:       String(sess.id)
     });
 
     if (error) return alert("Error al actualizar: " + error.message);
@@ -1481,6 +1557,7 @@ async function guardarConfiguracionResultados(solicitudId) {
 let selectedGradeId = null;
 let selectedGroupId = null;
 let selectedSchoolId = null;
+let selectedSchoolName = '';  // nombre del colegio activo en carga masiva
 
 async function viewSchoolStructure(schoolId, schoolName) {
     selectedSchoolId = schoolId;
@@ -1494,9 +1571,12 @@ async function viewSchoolStructure(schoolId, schoolName) {
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h3>1. Selecciona el Grado</h3>
                 <div style="display:flex; gap:10px;">
-                    <button class="btn-main" style="width:auto; padding:5px 15px;" onclick="addGrade(${schoolId})">+ Nuevo</button>
+                    <!-- <button class="btn-main" style="width:auto; padding:5px 15px;" onclick="addGrade(${schoolId})">+ Nuevo</button> -->
                     <button class="btn-main" style="width:auto; padding:5px 15px; background:var(--accent);" onclick='viewLoadStudents(${schoolId}, ${JSON.stringify(schoolName)})'>
                         <i class="fa-solid fa-file-excel"></i> Carga Masiva
+                    </button>
+                    <button class="btn-main" style="width:auto; padding:5px 15px; background:var(--primary);" onclick='descargarExcelColegio(${schoolId}, ${JSON.stringify(schoolName)})'>
+                        <i class="fa-solid fa-download"></i> Descargar Consolidado
                     </button>
                 </div>
             </div>
@@ -1505,7 +1585,7 @@ async function viewSchoolStructure(schoolId, schoolName) {
         <div class="card span-6" id="groupCard" style="display:none;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h3>2. Selecciona el Grupo</h3>
-                <button class="btn-main" style="width:auto; padding:5px 15px; background:var(--success);" onclick="addGroup(${schoolId})">+ Añadir Grupo</button>
+                <!-- <button class="btn-main" style="width:auto; padding:5px 15px; background:var(--success);" onclick="addGroup(${schoolId})">+ Añadir Grupo</button> -->
             </div>
             <div id="groupsPicker" class="horizontal-picker"></div>
         </div>
@@ -1532,36 +1612,40 @@ async function viewSchoolStructure(schoolId, schoolName) {
 
 async function deleteGroup(groupId, gradeId, schoolId, ev) {
     if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
-    if(!confirm("¿Estás seguro de eliminar este GRUPO? Se borrarán también todos los estudiantes inscritos en él.")) return;
-    
-    // REFUERZO SEGURIDAD: Eliminación via RPC
+    if (!confirm("¿Estás seguro de eliminar este GRUPO? Se borrarán también todos los estudiantes inscritos en él.")) return;
+
+    // 1. Vaciar estudiantes del grupo (borra testudiantes + tusuario)
+    const { error: errVaciar } = await _s.rpc('vaciar_grupo_estudiantes', {
+        p_grupo_id: groupId
+    });
+    if (errVaciar) return alert("Error al vaciar estudiantes: " + errVaciar.message);
+
+    // 2. Eliminar el grupo ya vacío
     const { data: res, error: rpcError } = await _s.rpc('eliminar_entidad_sistema', {
         p_tabla: 'tgrupos',
         p_id_entidad: groupId.toString(),
         p_solicitante_id: sess.id
     });
 
-    if(rpcError || res.status === 'error') alert("Error: " + (rpcError?.message || res?.message));
-    else { 
-        alert("Grupo eliminado."); 
-        if (selectedGroupId === groupId) { 
-            selectedGroupId = null; 
-            document.getElementById('studentCard').style.display = "none"; 
-        } 
-        loadGrades(schoolId); 
-        loadGroups(gradeId, schoolId); 
+    if (rpcError || res.status === 'error') alert("Error: " + (rpcError?.message || res?.message));
+    else {
+        alert("Grupo eliminado.");
+        if (selectedGroupId === groupId) {
+            selectedGroupId = null;
+            document.getElementById('studentCard').style.display = "none";
+        }
+        loadGrades(schoolId);
+        loadGroups(gradeId, schoolId);
     }
 }
 
 async function bulkDeleteStudents() {
     if (!selectedGroupId) return alert("Selecciona un grupo.");
     if (!confirm("¿Eliminar todos los estudiantes de este grupo? Esta acción no se puede deshacer.")) return;
-    
-    // REFUERZO SEGURIDAD: Vaciado masivo via RPC
-    const { data: res, error } = await _s.rpc('vaciar_entidad_sistema', {
-        p_tipo: 'estudiantes_grupo',
-        p_id_padre: selectedGroupId,
-        p_solicitante_id: sess.id
+
+    // vaciar_grupo_estudiantes(p_grupo_id integer) — elimina todos los estudiantes del grupo
+    const { error } = await _s.rpc('vaciar_grupo_estudiantes', {
+        p_grupo_id: selectedGroupId
     });
 
     if (error) alert("Error: " + error.message);
@@ -1572,23 +1656,82 @@ async function bulkDeleteStudents() {
 }
 
 async function deleteGradeGroups(gradeId, schoolId, event) {
-    if(event) event.stopPropagation();
+    if (event) event.stopPropagation();
     if (!confirm("¿Deseas eliminar EL GRADO COMPLETO? Esto borrará todos los grupos y estudiantes de este grado en este colegio.")) return;
-    
-    // REFUERZO SEGURIDAD: Vaciado masivo via RPC
-    const { data: res, error } = await _s.rpc('vaciar_entidad_sistema', {
-        p_tipo: 'grupos_grado',
-        p_id_padre: gradeId,
-        p_solicitante_id: sess.id
+
+    // 1. Obtener todos los grupos del grado
+    const { data: res, error: errGrupos } = await _s.rpc('obtener_grupos_grado_seguro', {
+        p_grado_id: String(gradeId),
+        p_colegio_id: String(schoolId)
     });
 
-    if(error) alert("Error: " + error.message);
-    else { 
-        alert("Grado eliminado de la vista del colegio."); 
-        selectedGradeId = null; 
-        document.getElementById('groupCard').style.display = "none"; 
-        document.getElementById('studentCard').style.display = "none"; 
-        loadGrades(schoolId); 
+    if (errGrupos) return alert("Error al obtener grupos: " + errGrupos.message);
+
+    const grupos = res?.data?.data || res?.data || [];
+
+    // 2. Por cada grupo: vaciar sus estudiantes y luego eliminar el grupo
+    for (const grupo of grupos) {
+        // Vaciar estudiantes del grupo
+        const { error: errVaciar } = await _s.rpc('vaciar_grupo_estudiantes', {
+            p_grupo_id: grupo.id
+        });
+        if (errVaciar) return alert(`Error al vaciar grupo ${grupo.nombre}: ` + errVaciar.message);
+
+        // Eliminar el grupo
+        const { data: resDel, error: errDel } = await _s.rpc('eliminar_entidad_sistema', {
+            p_tabla: 'tgrupos',
+            p_id_entidad: String(grupo.id),
+            p_solicitante_id: sess.id
+        });
+        if (errDel || resDel?.status === 'error') {
+            return alert(`Error al eliminar grupo ${grupo.nombre}: ` + (errDel?.message || resDel?.message));
+        }
+    }
+
+    alert("Grado eliminado de la vista del colegio.");
+    selectedGradeId = null;
+    document.getElementById('groupCard').style.display = "none";
+    document.getElementById('studentCard').style.display = "none";
+    loadGrades(selectedSchoolId);
+}
+
+/**
+ * Descarga el consolidado de estudiantes de un colegio en formato Excel
+ */
+async function descargarExcelColegio(schoolId, schoolName) {
+    try {
+        // Usamos la RPC segura que salta RLS y devuelve todos los estudiantes del colegio
+        const { data: res, error } = await _s.rpc('rpc_core_listar_estudiantes', {
+            p_colegio_id: schoolId
+        });
+
+        if (error) throw error;
+
+        const data = res?.data || [];
+
+        if (!data || data.length === 0) {
+            alert('No hay estudiantes registrados en este colegio.');
+            return;
+        }
+
+        // Formato compatible con la plantilla de carga masiva
+        const datosExcel = data.map(est => ({
+            grado:          est.grado_nombre    || '',
+            grupo:          est.grupo_nombre    || '',
+            nombre:         est.nombre          || '',
+            identificacion: est.identificacion  || '',
+            tipodoc:        est.tipodoc         || ''
+        }));
+
+        const hoja  = XLSX.utils.json_to_sheet(datosExcel);
+        const libro = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(libro, hoja, 'Estudiantes_Activos');
+
+        const safeName = schoolName ? schoolName.replace(/[^a-zA-Z0-9]/g, '_') : 'Colegio';
+        XLSX.writeFile(libro, `Consolidado_${safeName}.xlsx`);
+    } catch (err) {
+        console.error(err);
+        alert('Error al generar el Excel: ' + err.message);
     }
 }
 
@@ -1772,9 +1915,15 @@ async function addGroup(schoolId) {
 }
 
 async function viewLoadStudents(schoolId, schoolName) {
+    // Guardar en globales para que los botones internos puedan usarlos sin pasar args inline
+    selectedSchoolId   = schoolId;
+    selectedSchoolName = schoolName;
+
+    const board = document.getElementById('dynamicBoard');
+    board.classList.add('bento-grid');
     document.getElementById('pageTitle').innerText = "Carga Masiva de Estudiantes";
-    document.getElementById('pageDesc').innerText = "Institución: " + schoolName;
-    document.getElementById('dynamicBoard').innerHTML = `
+    document.getElementById('pageDesc').innerText  = "Institución: " + schoolName;
+    board.innerHTML = `
         <div class="card span-4">
             <h3>Subir Base de Datos Única</h3>
             <div class="dropzone" onclick="document.getElementById('fileInput').click()">
@@ -1790,11 +1939,23 @@ async function viewLoadStudents(schoolId, schoolName) {
                 <a href="src/Cargamasiva/plantilla_estudiantes.xlsx" class="btn-main" style="text-decoration:none; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px; background:var(--success);" download>
                     <i class="fa-solid fa-file-download"></i> Descargar Plantilla
                 </a>
-                <button class="btn-main" style="background:var(--secondary);" onclick="viewSchoolStructure(${schoolId}, ${JSON.stringify(schoolName)})">
+                <button class="btn-main" style="background:var(--secondary);" onclick="volverAEstructura()">
                     Volver a Estructura
                 </button>
             </div>
         </div>`;
+}
+
+// Usa las variables globales para evitar problemas de comillas con nombres de colegios
+function volverAEstructura() {
+    viewSchoolStructure(selectedSchoolId, selectedSchoolName);
+}
+
+// Cancela el panel de depuración y vuelve a la pantalla de carga masiva limpia
+function cancelarCargaMasiva() {
+    jsonOriginal      = [];
+    cambiosPendientes = [];
+    viewLoadStudents(selectedSchoolId, selectedSchoolName);
 }
 
 async function processExcelInteligente(event, schoolId) {
@@ -1817,6 +1978,9 @@ async function processExcelInteligente(event, schoolId) {
             // Obtener el JSON crudo
             let json = XLSX.utils.sheet_to_json(worksheet);
             if (json.length === 0) throw new Error("El archivo está vacío.");
+
+            // Filtrar filas completamente vacías que Excel a veces agrega al final
+            json = json.filter(row => Object.values(row).some(v => v !== null && v !== undefined && String(v).trim() !== ''));
 
             // 1. Validar Encabezados Requeridos
             const headers = Object.keys(json[0]);
@@ -1841,7 +2005,23 @@ async function processExcelInteligente(event, schoolId) {
                 return newRow;
             });
 
-            // 1. Llamar a la validación rigurosa
+            // 3. Validación de frontend complementaria (Evitar grados basura)
+            let erroresFrontend = [];
+            json.forEach(row => {
+                const g = String(row.grado).trim();
+                // Permitimos grados numéricos del 1 al 11. (Puedes ajustar esto si usan Jardín, Transición, etc.)
+                if (!/^(1|2|3|4|5|6|7|8|9|10|11)$/.test(g)) {
+                    erroresFrontend.push({
+                        nombre: row.nombre,
+                        identificacion: row.identificacion,
+                        colegio_actual: `ERROR: Grado "${g}" inválido (usar 1 a 11)`
+                    });
+                }
+            });
+
+            // 4. Llamar a la validación rigurosa de base de datos
+            jsonOriginal = json;    // guardamos copia editable
+            cambiosPendientes = []; // limpiamos historial previo
             const { data: validacion, error } = await _s.rpc('validar_estudiantes_masivo', {
                 p_estudiantes: json,
                 p_colegio_id: schoolId
@@ -1849,7 +2029,11 @@ async function processExcelInteligente(event, schoolId) {
 
             if (error) throw error;
 
-            // 2. Verificar si hay conflictos
+            // 5. Unificar los conflictos del Frontend y del Backend
+            validacion.hay_conflictos = validacion.hay_conflictos || (erroresFrontend.length > 0);
+            validacion.conflictos = validacion.conflictos ? validacion.conflictos.concat(erroresFrontend) : erroresFrontend;
+
+            // 6. Verificar si hay conflictos unidos
             if (validacion.hay_conflictos) {
                 renderPanelDepuracion(json, validacion.conflictos, schoolId);
             } else {
@@ -1868,60 +2052,279 @@ async function processExcelInteligente(event, schoolId) {
 }
 
 /**
- * Renderiza el Panel de Depuración con los errores encontrados
+ * Renderiza el Panel de Depuración con los errores encontrados.
+ * Agrupa múltiples errores del mismo estudiante en una sola fila.
+ * Los campos problemáticos se resaltan con borde rojo.
  */
 function renderPanelDepuracion(originalJson, conflictos, schoolId) {
     const board = document.getElementById('dynamicBoard');
-    const totalErrores = conflictos.length;
-    const totalValidos = originalJson.length - totalErrores;
 
-    // Filtrar los datos originales para quitar los IDs que tienen conflicto
-    const IDsConflictivos = new Set(conflictos.map(c => String(c.identificacion)));
-    const datosLimpios = originalJson.filter(row => !IDsConflictivos.has(String(row.identificacion)));
+    // ── 1. Agrupar conflictos por identificación ──────────────────────────
+    // Un mismo estudiante puede tener grado inválido Y tipodoc inválido a la vez.
+    // Los agrupamos en un Map: identificacion → { orig, motivos[] }
+    const mapaConflictos = new Map();
+    conflictos.forEach(c => {
+        const key = String(c.identificacion);
+        if (!mapaConflictos.has(key)) {
+            const orig = originalJson.find(r => String(r.identificacion) === key) || c;
+            mapaConflictos.set(key, { orig, motivos: [] });
+        }
+        const esError  = c.colegio_actual && c.colegio_actual.startsWith('ERROR');
+        const txtMotivo = esError
+            ? c.colegio_actual.replace('ERROR: ', '')
+            : `Ya existe en: ${c.colegio_actual || 'Este mismo colegio'}`;
+        mapaConflictos.get(key).motivos.push({ texto: txtMotivo, esError });
+    });
+
+    const totalErrores = mapaConflictos.size;                          // filas únicas
+    const IDsConflictivos = new Set(mapaConflictos.keys());
+    const totalValidos    = originalJson.length - IDsConflictivos.size;
+    const datosLimpios    = originalJson.filter(row => !IDsConflictivos.has(String(row.identificacion)));
+
+    const TIPODOC_OPTS = ['C.C', 'TI', 'C.E', 'EXT', 'PPT'];
+    const BORDE_ERROR  = '2px solid #ef4444';
+    const BORDE_NORMAL = '1px solid #cbd5e1';
+
+    // ── 2. Construir filas ────────────────────────────────────────────────
+    const filasHtml = Array.from(mapaConflictos.values()).map(({ orig, motivos }) => {
+
+        // Determinar qué campos tienen error según los motivos acumulados
+        const todosTextos  = motivos.map(m => m.texto.toLowerCase()).join(' ');
+        const errorGrado   = todosTextos.includes('grado');
+        const errorTipodoc = todosTextos.includes('tipo de documento') || todosTextos.includes('tipodoc');
+        const errorDuplic  = motivos.some(m => !m.esError);   // duplicado → resaltar identificación
+
+        const bordeGrado   = errorGrado   ? BORDE_ERROR : BORDE_NORMAL;
+        const bordeTipodoc = errorTipodoc ? BORDE_ERROR : BORDE_NORMAL;
+        const bordeIdent   = errorDuplic  ? BORDE_ERROR : BORDE_NORMAL;
+
+        const tdocOpts = TIPODOC_OPTS.map(opt =>
+            `<option value="${opt}" ${opt === String(orig.tipodoc || '') ? 'selected' : ''}>${opt}</option>`
+        ).join('');
+
+        // Columna Motivo: un ítem por cada error
+        const motivosHtml = motivos.map(m =>
+            `<div style="white-space:nowrap;">
+                <i class="fa-solid ${m.esError ? 'fa-triangle-exclamation' : 'fa-hotel'}"></i>
+                ${m.texto}
+            </div>`
+        ).join('');
+
+        return `
+            <tr data-orig-ident="${orig.identificacion}">
+                <td>
+                    <input class="conflict-input" data-campo="grado"
+                        value="${orig.grado || ''}" placeholder="Grado"
+                        style="width:55px; padding:4px 6px; border:${bordeGrado}; border-radius:5px; font-size:0.85rem;">
+                </td>
+                <td>
+                    <input class="conflict-input" data-campo="grupo"
+                        value="${orig.grupo || ''}" placeholder="Grupo"
+                        style="width:55px; padding:4px 6px; border:${BORDE_NORMAL}; border-radius:5px; font-size:0.85rem;">
+                </td>
+                <td>
+                    <input class="conflict-input" data-campo="nombre"
+                        value="${(orig.nombre || '').replace(/"/g, '&quot;')}" placeholder="Nombre"
+                        style="width:100%; min-width:130px; padding:4px 6px; border:${BORDE_NORMAL}; border-radius:5px; font-size:0.85rem;">
+                </td>
+                <td>
+                    <input class="conflict-input" data-campo="identificacion"
+                        value="${orig.identificacion || ''}" placeholder="Identificación"
+                        style="width:105px; padding:4px 6px; border:${bordeIdent}; border-radius:5px; font-size:0.85rem; font-family:monospace;">
+                </td>
+                <td>
+                    <select class="conflict-input" data-campo="tipodoc"
+                        style="padding:4px 6px; border:${bordeTipodoc}; border-radius:5px; font-size:0.85rem;">
+                        ${tdocOpts}
+                    </select>
+                </td>
+                <td style="font-size:0.82rem; color:var(--danger); font-weight:600;">
+                    ${motivosHtml}
+                </td>
+            </tr>`;
+    }).join('');
 
     board.innerHTML = `
         <div class="card span-6" style="border: 2px solid var(--danger);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
                 <div>
                     <h3 style="color:var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> Panel de Depuración de Carga</h3>
-                    <p>Se han detectado <strong>${totalErrores}</strong> registros duplicados o con conflictos de institución.</p>
+                    <p style="margin:4px 0 0 0;">Se detectaron <strong>${totalErrores}</strong> registros con errores o conflictos. Edita las filas y revalida.</p>
                 </div>
-                <div style="display:flex; gap:10px;">
+                <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
                     <button class="btn-main" style="width:auto; background:var(--success);" onclick='procederConCargaFinal(${JSON.stringify(datosLimpios)}, ${schoolId})'>
-                        Cargar registros válidos (${totalValidos})
+                        <i class="fa-solid fa-upload"></i> Cargar válidos (${totalValidos})
                     </button>
-                    <button class="btn-main" style="width:auto; background:var(--secondary);" onclick="location.reload()">
-                        Cancelar todo
+                    <button class="btn-main" style="width:auto; background:var(--secondary);" onclick="cancelarCargaMasiva()">
+                        <i class="fa-solid fa-xmark"></i> Cancelar todo
                     </button>
                 </div>
             </div>
 
-            <div class="card-table-wrapper" style="max-height:400px; overflow-y:auto; margin:0; border:1px solid #fed7d7; border-radius:12px;">
+            <div class="card-table-wrapper" style="max-height:420px; overflow-y:auto; margin:0; border:1px solid #fed7d7; border-radius:12px;">
                 <table class="data-table">
                     <thead>
                         <tr style="background:#fff5f5;">
-                            <th>Estudiante en Excel</th>
+                            <th>Grado</th>
+                            <th>Grupo</th>
+                            <th>Nombre</th>
                             <th>Identificación</th>
-                            <th>Conflicto Detectado</th>
-                            <th>Estado</th>
+                            <th>TipoDoc</th>
+                            <th>Motivo(s)</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        ${conflictos.map(c => `
-                            <tr>
-                                <td><strong>${c.nombre}</strong></td>
-                                <td><code style="background:#eee; padding:2px 5px; border-radius:4px;">${c.identificacion}</code></td>
-                                <td style="color:var(--danger); font-weight:600;">
-                                    <i class="fa-solid fa-hotel"></i> Ya existe en: ${c.colegio_actual || 'Este mismo colegio'}
-                                </td>
-                                <td><span class="badge badge-pending">Omitido</span></td>
-                            </tr>
-                        `).join('')}
+                    <tbody id="tbodyDepuracion">
+                        ${filasHtml}
                     </tbody>
                 </table>
             </div>
-            <p style="margin-top:15px; font-size:0.85rem; color:var(--secondary);">* Los registros mostrados arriba NO serán cargados para evitar corrupción de datos.</p>
+
+            <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <p style="font-size:0.82rem; color:var(--secondary); margin:0;">
+                    * Los campos con borde rojo son los que requieren corrección.
+                </p>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button class="btn-main" style="width:auto; background:#64748b;" onclick="descargarLogEdiciones()">
+                        <i class="fa-solid fa-file-export"></i> Log de ediciones
+                    </button>
+                    <button class="btn-main" style="width:auto; background:var(--primary);" onclick="revalidarConCambios(${schoolId})">
+                        <i class="fa-solid fa-rotate"></i> Aplicar cambios y validar
+                    </button>
+                </div>
+            </div>
         </div>`;
+}
+
+// ── Listeners: sincronizan los inputs/selects del panel con jsonOriginal ───
+document.addEventListener('input', e => {
+    if (!e.target.matches('.conflict-input')) return;
+    const fila = e.target.closest('tr[data-orig-ident]');
+    if (!fila) return;
+
+    const origIdent = fila.dataset.origIdent;
+    const campo     = e.target.dataset.campo;
+    const nuevoVal  = e.target.value.trim();
+
+    const registro = jsonOriginal.find(r => String(r.identificacion) === String(origIdent));
+    if (!registro) return;
+
+    const anterior = registro[campo];
+    if (String(anterior) !== nuevoVal) {
+        cambiosPendientes.push({ identificacion: origIdent, campo, anterior, nuevo: nuevoVal, timestamp: new Date().toISOString() });
+        registro[campo] = nuevoVal;
+        // Si cambió la identificación, actualizamos el rastreador de la fila
+        if (campo === 'identificacion') fila.dataset.origIdent = nuevoVal;
+    }
+});
+
+document.addEventListener('change', e => {
+    // El <select> de tipodoc dispara 'change', no 'input'
+    if (!e.target.matches('.conflict-input[data-campo="tipodoc"]')) return;
+    const fila = e.target.closest('tr[data-orig-ident]');
+    if (!fila) return;
+
+    const origIdent = fila.dataset.origIdent;
+    const nuevoVal  = e.target.value;
+
+    const registro = jsonOriginal.find(r => String(r.identificacion) === String(origIdent));
+    if (!registro) return;
+
+    const anterior = registro.tipodoc;
+    if (anterior !== nuevoVal) {
+        cambiosPendientes.push({ identificacion: origIdent, campo: 'tipodoc', anterior, nuevo: nuevoVal, timestamp: new Date().toISOString() });
+        registro.tipodoc = nuevoVal;
+    }
+});
+
+/**
+ * Lee los inputs de la tabla, sincroniza jsonOriginal y re-corre las 3 validaciones:
+ * 1. Grado válido (1–11)  — frontend
+ * 2. Tipodoc válido       — frontend
+ * 3. Duplicados           — RPC validar_estudiantes_masivo
+ */
+async function revalidarConCambios(schoolId) {
+    try {
+        // Barrido final: captura valores aunque el usuario no haya salido del campo
+        document.querySelectorAll('tr[data-orig-ident]').forEach(fila => {
+            const origIdent = fila.dataset.origIdent;
+            const registro  = jsonOriginal.find(r => String(r.identificacion) === String(origIdent));
+            if (!registro) return;
+            fila.querySelectorAll('.conflict-input').forEach(input => {
+                const campo = input.dataset.campo;
+                if (!campo) return;
+                const val = input.tagName === 'SELECT' ? input.value : input.value.trim();
+                if (String(registro[campo]) !== val) registro[campo] = val;
+            });
+        });
+
+        const btnRevalidar = document.querySelector('[onclick^="revalidarConCambios"]');
+        if (btnRevalidar) { btnRevalidar.disabled = true; btnRevalidar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Revalidando...'; }
+
+        const GRADOS_VALIDOS  = ['1','2','3','4','5','6','7','8','9','10','11'];
+        const TIPODOC_VALIDOS = ['C.C','TI','C.E','EXT','PPT'];
+
+        // 1. Errores de grado
+        const errGrado = jsonOriginal
+            .filter(row => !GRADOS_VALIDOS.includes(String(row.grado).trim()))
+            .map(row => ({ ...row, colegio_actual: `ERROR: Grado "${row.grado}" inválido (usar 1 a 11)` }));
+
+        // 2. Errores de tipodoc (solo los que ya pasaron grado)
+        const IDsConErrGrado = new Set(errGrado.map(r => String(r.identificacion)));
+        const errTipodoc = jsonOriginal
+            .filter(row => !IDsConErrGrado.has(String(row.identificacion)))
+            .filter(row => !TIPODOC_VALIDOS.includes(String(row.tipodoc || '').trim()))
+            .map(row => ({ ...row, colegio_actual: `ERROR: Tipo de documento "${row.tipodoc}" no válido` }));
+
+        const erroresLocales = [...errGrado, ...errTipodoc];
+        const IDsConErrLocal = new Set(erroresLocales.map(r => String(r.identificacion)));
+        const jsonParaRPC    = jsonOriginal.filter(row => !IDsConErrLocal.has(String(row.identificacion)));
+
+        // 3. Duplicados via RPC
+        let conflictosRPC = [];
+        if (jsonParaRPC.length > 0) {
+            const { data: validacion, error } = await _s.rpc('validar_estudiantes_masivo', {
+                p_estudiantes: jsonParaRPC,
+                p_colegio_id: schoolId
+            });
+            if (error) throw error;
+            if (validacion.hay_conflictos) {
+                conflictosRPC = validacion.conflictos.map(c => {
+                    const orig = jsonOriginal.find(r => String(r.identificacion) === String(c.identificacion));
+                    return orig ? { ...orig, colegio_actual: c.colegio_actual } : c;
+                });
+            }
+        }
+
+        const todosConflictos = [...erroresLocales, ...conflictosRPC];
+
+        if (todosConflictos.length > 0) {
+            renderPanelDepuracion(jsonOriginal, todosConflictos, schoolId);
+        } else {
+            if (confirm('✅ ¡Sin conflictos! Todos los registros son válidos.\n\n¿Deseas cargar los datos ahora?')) {
+                procederConCargaFinal(jsonOriginal, schoolId);
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Error al revalidar: ' + err.message);
+    }
+}
+
+/**
+ * Descarga el historial de ediciones realizadas en el panel de depuración.
+ */
+function descargarLogEdiciones() {
+    if (cambiosPendientes.length === 0) {
+        alert('No se han realizado ediciones en este panel.');
+        return;
+    }
+    const blob = new Blob([JSON.stringify(cambiosPendientes, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `log_ediciones_${new Date().toISOString().replace(/[:.]/g, '_')}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
 }
 
 /**

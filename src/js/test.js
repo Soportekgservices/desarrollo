@@ -745,13 +745,16 @@ async function viewStudent() {
     const qData = examData.preguntas;
     const hasPending = examData.tiene_pendientes;
 
-    // Si el estado es "Proceso", cargamos el progreso desde la DB para continuar
-    if (existingResult && existingResult.estado === 'Proceso') {
-        const recovery = JSON.parse(existingResult.respuestas_raw || '{}');
+    // Si el estado es "En Proceso", cargamos el progreso desde la DB para continuar
+    let progresoCargadoDeBD = false;
+    if (existingResult && existingResult.estado === 'En Proceso') {
+        // respuestas_raw puede llegar como objeto (Supabase lo deserializa) o como string
+        const raw = existingResult.respuestas_raw;
+        const recovery = (typeof raw === 'string') ? JSON.parse(raw || '{}') : (raw || {});
         if (recovery.answers) {
             answers = recovery.answers;
             step = recovery.step || 0;
-            console.log("Sistema: Progreso recuperado desde la base de datos.");
+            progresoCargadoDeBD = true;
         }
     }
     else if (existingResult && existingResult.estado === 'Finalizado') {
@@ -811,7 +814,7 @@ async function viewStudent() {
     dynamicQuestions = qData;
 
     // Si no se recuperó progreso de la base de datos, inicializamos y buscamos en local
-    if (!answers || answers.length === 0 || step === 0) {
+    if (!progresoCargadoDeBD) {
         answers = new Array(dynamicQuestions.length).fill(null);
         step = 0;
         const savedProgress = localStorage.getItem(`autosave_${sess.id}_${solActiva.id_prueba}`);

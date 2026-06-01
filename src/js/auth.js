@@ -52,7 +52,7 @@ async function authenticateUser() {
             p_password: pass
         });
         if (pwErr || pwRes?.status === 'error') {
-            console.warn('establecer_password_usuario:', pwErr?.message || pwRes?.message);
+            // Silenciado: mensaje informativo no relevante para el flujo de login
         }
         res.user.debe_cambiar_password = false;
     }

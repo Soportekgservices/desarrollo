@@ -185,14 +185,14 @@ function generateGroupTexts(stats) {
         dominantCohesionPercent = 0
     } = stats;
 
-    const areaEsc       = escapeHtml(topAreaLabel || 'Sin definir');
+    const areaEsc = escapeHtml(topAreaLabel || 'Sin definir');
     // Limpiar punto final de los campos de areaInfo para evitar puntos dobles en el texto
-    const interesesEsc  = escapeHtml((areaInfo?.intereses || 'diversas áreas del conocimiento').replace(/\.\s*$/, ''));
+    const interesesEsc = escapeHtml((areaInfo?.intereses || 'diversas áreas del conocimiento').replace(/\.\s*$/, ''));
     const fortalezasEsc = escapeHtml((areaInfo?.fortalezas || 'habilidades en desarrollo').replace(/\.\s*$/, ''));
-    const sectorEsc     = escapeHtml((areaInfo?.sector_laboral || 'múltiples sectores productivos').replace(/\.\s*$/, ''));
-    const alto  = interestLevels?.Alto  || 0;
+    const sectorEsc = escapeHtml((areaInfo?.sector_laboral || 'múltiples sectores productivos').replace(/\.\s*$/, ''));
+    const alto = interestLevels?.Alto || 0;
     const medio = interestLevels?.Medio || 0;
-    const bajo  = interestLevels?.Bajo  || 0;
+    const bajo = interestLevels?.Bajo || 0;
 
     // ── Resumen ejecutivo ────────────────────────────────────────────────────
     // Enfoque: cohesión con área dominante + distribución de niveles.
@@ -232,42 +232,42 @@ function generateGroupTexts(stats) {
         `${bajo} con baja claridad (≤45%). ` +
         (tienePerfilesCombinados
             ? `El ${pctPerfilesCombinados}% de los estudiantes presenta perfiles ` +
-              `individuales combinados: aunque comparten el área dominante principal ` +
-              `(${areaEsc}), cada estudiante tiene una segunda área de interés ` +
-              `significativa diferente. Esto enriquece la diversidad vocacional interna de la cohorte.`
+            `individuales combinados: aunque comparten el área dominante principal ` +
+            `(${areaEsc}), cada estudiante tiene una segunda área de interés ` +
+            `significativa diferente. Esto enriquece la diversidad vocacional interna de la cohorte.`
             : tipoPerfil === 'Combinado'
                 ? `El perfil grupal combinado indica que el área dominante comparte protagonismo ` +
-                  `con una segunda área de interés significativa a nivel de promedios grupales.`
+                `con una segunda área de interés significativa a nivel de promedios grupales.`
                 : `El perfil grupal simple indica una concentración clara de intereses en el área de ` +
-                  `${areaEsc}, lo que facilita el diseño de estrategias de orientación colectiva.`);
+                `${areaEsc}, lo que facilita el diseño de estrategias de orientación colectiva.`);
 
     // ── Análisis de riesgos ──────────────────────────────────────────────────
     // Completamente condicional: si no hay riesgo, no se menciona.
     const riskAnalysis = bajo > 0
         ? `Se identificaron <strong>${bajo}</strong> estudiante${bajo !== 1 ? 's' : ''} ` +
-          `(${lowVocPercent}%) con baja claridad vocacional. ` +
-          `Estos estudiantes no presentan un área dominante definida, lo que puede indicar ` +
-          `indecisión, falta de exploración de intereses o necesidad de mayor acompañamiento ` +
-          `por parte del orientador escolar. Se recomienda realizar entrevistas individuales ` +
-          `y actividades de exploración vocacional complementarias.`
+        `(${lowVocPercent}%) con baja claridad vocacional. ` +
+        `Estos estudiantes no presentan un área dominante definida, lo que puede indicar ` +
+        `indecisión, falta de exploración de intereses o necesidad de mayor acompañamiento ` +
+        `por parte del orientador escolar. Se recomienda realizar entrevistas individuales ` +
+        `y actividades de exploración vocacional complementarias.`
         : `La totalidad de la cohorte evaluada presenta claridad vocacional media o alta. ` +
-          `No se identificaron estudiantes en situación de riesgo vocacional. ` +
-          `Este resultado refleja una cohorte con intereses definidos que facilita ` +
-          `el trabajo de orientación institucional.`;
+        `No se identificaron estudiantes en situación de riesgo vocacional. ` +
+        `Este resultado refleja una cohorte con intereses definidos que facilita ` +
+        `el trabajo de orientación institucional.`;
 
     // ── Potenciales académicos ───────────────────────────────────────────────
     // Usa datos reales; ajusta el texto según si hay o no estudiantes de alta claridad.
     const potentialAnalysis = alto > 0
         ? `Las fortalezas colectivas identificadas incluyen: ${fortalezasEsc}. ` +
-          `El grupo presenta potencial para desarrollarse en el sector de ${sectorEsc}. ` +
-          `${alto} estudiante${alto !== 1 ? 's' : ''} con alta claridad ` +
-          `vocacional constituyen un núcleo de referencia que puede servir como modelo para ` +
-          `sus pares en proceso de definición. Se recomienda aprovechar este potencial mediante ` +
-          `proyectos de orientación entre pares y actividades de exploración profesional.`
+        `El grupo presenta potencial para desarrollarse en el sector de ${sectorEsc}. ` +
+        `${alto} estudiante${alto !== 1 ? 's' : ''} con alta claridad ` +
+        `vocacional constituyen un núcleo de referencia que puede servir como modelo para ` +
+        `sus pares en proceso de definición. Se recomienda aprovechar este potencial mediante ` +
+        `proyectos de orientación entre pares y actividades de exploración profesional.`
         : `Las fortalezas colectivas identificadas incluyen: ${fortalezasEsc}. ` +
-          `El grupo presenta potencial para desarrollarse en el sector de ${sectorEsc}. ` +
-          `Se recomienda implementar actividades de exploración vocacional que permitan ` +
-          `a los estudiantes consolidar sus intereses y avanzar hacia una mayor claridad.`;
+        `El grupo presenta potencial para desarrollarse en el sector de ${sectorEsc}. ` +
+        `Se recomienda implementar actividades de exploración vocacional que permitan ` +
+        `a los estudiantes consolidar sus intereses y avanzar hacia una mayor claridad.`;
 
     // ── Conclusión general ───────────────────────────────────────────────────
     // Sin mención de promedio grupal. Enfocada en cohesión, distribución y perfiles reales.
@@ -482,24 +482,24 @@ function generateRecommendationsHtml(dominantCode, areaInfo, riskPercent) {
         {
             titulo: 'Orientación vocacional colectiva',
             desc: `Implementar talleres grupales de exploración vocacional enfocados en el área de ${areaLabel}, ` +
-                  `aprovechando la tendencia predominante de la cohorte.`
+                `aprovechando la tendencia predominante de la cohorte.`
         },
         {
             titulo: 'Acompañamiento individualizado',
             desc: riskPercent > 0
                 ? `Priorizar el seguimiento psicopedagógico del ${riskPercent}% de estudiantes con baja claridad ` +
-                  `vocacional mediante entrevistas individuales y actividades de autoconocimiento.`
+                `vocacional mediante entrevistas individuales y actividades de autoconocimiento.`
                 : `Mantener el seguimiento continuo para consolidar la claridad vocacional ya evidenciada en el grupo.`
         },
         {
             titulo: 'Vinculación con el sector productivo',
             desc: `Gestionar visitas, charlas y pasantías con instituciones del sector de ${sector}, ` +
-                  `alineadas con el perfil vocacional predominante del grupo.`
+                `alineadas con el perfil vocacional predominante del grupo.`
         },
         {
             titulo: 'Comunicación con familias',
             desc: `Compartir los resultados grupales con padres y acudientes en reunión institucional, ` +
-                  `orientando sobre las opciones de educación superior y técnica disponibles.`
+                `orientando sobre las opciones de educación superior y técnica disponibles.`
         }
     ];
 
@@ -514,17 +514,17 @@ function generateRecommendationsHtml(dominantCode, areaInfo, riskPercent) {
         {
             titulo: 'Proyectos transversales',
             desc: `Diseñar proyectos de aula que integren competencias del área de ${areaLabel} ` +
-                  `con las asignaturas del plan de estudios vigente.`
+                `con las asignaturas del plan de estudios vigente.`
         },
         {
             titulo: 'Ferias y eventos vocacionales',
             desc: `Organizar ferias de orientación profesional con participación de egresados y ` +
-                  `representantes de programas académicos afines al perfil grupal.`
+                `representantes de programas académicos afines al perfil grupal.`
         },
         {
             titulo: 'Uso de resultados en consejería',
             desc: `Incorporar los resultados del Test CHASIDE como insumo en las sesiones de ` +
-                  `consejería escolar y en la construcción del proyecto de vida de cada estudiante.`
+                `consejería escolar y en la construcción del proyecto de vida de cada estudiante.`
         }
     ];
 
@@ -611,7 +611,7 @@ async function buildGroupReportContext(schoolId, gradeId, gradeName, schoolName)
 
         const { data: fallbackRes, error: fallbackErr } = await _s.rpc('obtener_informe_estrategico_grupal', {
             p_colegio_id: parseInt(schoolId),
-            p_grado_id:   parseInt(gradeId),
+            p_grado_id: parseInt(gradeId),
             p_usuario_id: sess.id
         });
 
@@ -623,7 +623,7 @@ async function buildGroupReportContext(schoolId, gradeId, gradeName, schoolName)
         // La RPC retorna students:[{id, nombre}] y results:[{id_estudiante, respuestas}]
         // Cruzamos ambos arrays para construir rawResults con nombre + respuestas
         const students = fallbackRes?.students || [];
-        const results  = fallbackRes?.results  || [];
+        const results = fallbackRes?.results || [];
 
         if (!students.length || !results.length) {
             console.warn('[reports.js] Fallback: sin estudiantes o sin resultados para colegio=' + schoolId + ' grado=' + gradeId);
@@ -647,8 +647,8 @@ async function buildGroupReportContext(schoolId, gradeId, gradeName, schoolName)
             })
             .map(r => ({
                 id_estudiante: r.id_estudiante,
-                nombre:        studentMap[String(r.id_estudiante)] || 'Estudiante',
-                respuestas:    r.respuestas
+                nombre: studentMap[String(r.id_estudiante)] || 'Estudiante',
+                respuestas: r.respuestas
             }));
     }
 
@@ -656,8 +656,8 @@ async function buildGroupReportContext(schoolId, gradeId, gradeName, schoolName)
 
     // ── 2. Calcular métricas de agregación ───────────────────────────────────
     const codes = ['C', 'H', 'A', 'S', 'I', 'D', 'E'];
-    const areaTotals   = Object.fromEntries(codes.map(c => [c, 0]));
-    const areaCounts   = Object.fromEntries(codes.map(c => [c, 0]));
+    const areaTotals = Object.fromEntries(codes.map(c => [c, 0]));
+    const areaCounts = Object.fromEntries(codes.map(c => [c, 0]));
     const studentsByArea = Object.fromEntries(codes.map(c => [c, []]));
     const interestLevels = { Alto: 0, Medio: 0, Bajo: 0 };
     let highScoresSum = 0;
@@ -676,8 +676,8 @@ async function buildGroupReportContext(schoolId, gradeId, gradeName, schoolName)
                 const code = normalizeAreaCode(area);
                 if (!code) return;
                 const numVal = Number(val) || 0;
-                areaTotals[code]  = (areaTotals[code]  || 0) + numVal;
-                areaCounts[code]  = (areaCounts[code]  || 0) + 1;
+                areaTotals[code] = (areaTotals[code] || 0) + numVal;
+                areaCounts[code] = (areaCounts[code] || 0) + 1;
                 if (numVal > studentMax) {
                     studentMax = numVal;
                     dominantAreaForStudent = code;
@@ -695,7 +695,7 @@ async function buildGroupReportContext(schoolId, gradeId, gradeName, schoolName)
             if (studentMax >= 0) {
                 highScoresSum += studentMax;
                 const level = getVocationalLevel(studentMax);
-                if (level === 'Alto')       interestLevels.Alto++;
+                if (level === 'Alto') interestLevels.Alto++;
                 else if (level === 'Medio') interestLevels.Medio++;
                 else { interestLevels.Bajo++; studentsAtRisk++; }
             }
@@ -723,12 +723,12 @@ async function buildGroupReportContext(schoolId, gradeId, gradeName, schoolName)
     );
 
     // ── 5. Análisis de dominancia ────────────────────────────────────────────
-    const sortedAreas    = sortResultAreas(groupAverages);
-    const dominantAreas  = getDominantAreas(sortedAreas);
-    const dominantCode   = dominantAreas[0]?.code || 'C';
+    const sortedAreas = sortResultAreas(groupAverages);
+    const dominantAreas = getDominantAreas(sortedAreas);
+    const dominantCode = dominantAreas[0]?.code || 'C';
     const dominantLabels = dominantAreas.map(a => a.label).join(' / ') || 'Sin definir';
-    const dominantColor  = AREA_COLORS[dominantCode] || '#1A3A5C';
-    const maxScore       = sortedAreas[0]?.score || 0;
+    const dominantColor = AREA_COLORS[dominantCode] || '#1A3A5C';
+    const maxScore = sortedAreas[0]?.score || 0;
 
     // tipoPerfil grupal: basado en los promedios grupales (Simple/Combinado).
     const tipoPerfil = getProfileType(sortedAreas);
@@ -751,7 +751,7 @@ async function buildGroupReportContext(schoolId, gradeId, gradeName, schoolName)
 
     // Cohesión interna: % de estudiantes cuya área dominante individual
     // coincide con la dominante grupal.
-    const dominantCohesionCount   = (studentsByArea[dominantCode] || []).length;
+    const dominantCohesionCount = (studentsByArea[dominantCode] || []).length;
     const dominantCohesionPercent = population > 0
         ? Math.round((dominantCohesionCount / population) * 100)
         : 0;
@@ -773,13 +773,13 @@ async function buildGroupReportContext(schoolId, gradeId, gradeName, schoolName)
     const maturityLabel = nivelVocacion;
 
     // avgScore: promedio de los puntajes máximos individuales (dato técnico interno).
-    const avgScore    = population > 0 ? Math.round(highScoresSum / population) : 0;
+    const avgScore = population > 0 ? Math.round(highScoresSum / population) : 0;
     const riskPercent = Math.round((studentsAtRisk / population) * 100);
 
     // Porcentajes de niveles vocacionales — suman exactamente 100%.
-    const highVocPercent = Math.round((interestLevels.Alto  / population) * 100);
-    const midVocPercent  = Math.round((interestLevels.Medio / population) * 100);
-    const lowVocPercent  = 100 - highVocPercent - midVocPercent;
+    const highVocPercent = Math.round((interestLevels.Alto / population) * 100);
+    const midVocPercent = Math.round((interestLevels.Medio / population) * 100);
+    const lowVocPercent = 100 - highVocPercent - midVocPercent;
 
     // ── 6. Información del área dominante ────────────────────────────────────
     const areaInfo = await buildAreaInfo([dominantCode]);
@@ -803,13 +803,13 @@ async function buildGroupReportContext(schoolId, gradeId, gradeName, schoolName)
         <line x1="175" y1="145" x2="89"    y2="76.4"  stroke="#CBD5E0" stroke-width="0.8"/>
         <polygon points="${visuals.radarPoints}" fill="rgba(37,99,168,0.18)" stroke="#2563A8" stroke-width="1.8" stroke-linejoin="round"/>
         ${visuals.radarDots}
-        <text x="175" y="28"  text-anchor="middle" font-size="8.5" fill="${AREA_COLORS['C']}" font-weight="${dominantCode==='C'?'700':'600'}">${'C'+(dominantCode==='C'?' ★':'')}</text>
-        <text x="269" y="74"  text-anchor="start"  font-size="8.5" fill="${AREA_COLORS['H']}" font-weight="${dominantCode==='H'?'700':'600'}">${'H'+(dominantCode==='H'?' ★':'')}</text>
-        <text x="289" y="172" text-anchor="start"  font-size="8.5" fill="${AREA_COLORS['A']}" font-weight="${dominantCode==='A'?'700':'600'}">${'A'+(dominantCode==='A'?' ★':'')}</text>
-        <text x="224" y="255" text-anchor="middle" font-size="8.5" fill="${AREA_COLORS['S']}" font-weight="${dominantCode==='S'?'700':'600'}">${'S'+(dominantCode==='S'?' ★':'')}</text>
-        <text x="118" y="255" text-anchor="middle" font-size="8.5" fill="${AREA_COLORS['I']}" font-weight="${dominantCode==='I'?'700':'600'}">${'I'+(dominantCode==='I'?' ★':'')}</text>
-        <text x="56"  y="172" text-anchor="end"    font-size="8.5" fill="${AREA_COLORS['D']}" font-weight="${dominantCode==='D'?'700':'600'}">${'D'+(dominantCode==='D'?' ★':'')}</text>
-        <text x="80"  y="74"  text-anchor="end"    font-size="8.5" fill="${AREA_COLORS['E']}" font-weight="${dominantCode==='E'?'700':'600'}">${'E'+(dominantCode==='E'?' ★':'')}</text>
+        <text x="175" y="28"  text-anchor="middle" font-size="8.5" fill="${AREA_COLORS['C']}" font-weight="${dominantCode === 'C' ? '700' : '600'}">${'C' + (dominantCode === 'C' ? ' ★' : '')}</text>
+        <text x="269" y="74"  text-anchor="start"  font-size="8.5" fill="${AREA_COLORS['H']}" font-weight="${dominantCode === 'H' ? '700' : '600'}">${'H' + (dominantCode === 'H' ? ' ★' : '')}</text>
+        <text x="289" y="172" text-anchor="start"  font-size="8.5" fill="${AREA_COLORS['A']}" font-weight="${dominantCode === 'A' ? '700' : '600'}">${'A' + (dominantCode === 'A' ? ' ★' : '')}</text>
+        <text x="224" y="255" text-anchor="middle" font-size="8.5" fill="${AREA_COLORS['S']}" font-weight="${dominantCode === 'S' ? '700' : '600'}">${'S' + (dominantCode === 'S' ? ' ★' : '')}</text>
+        <text x="118" y="255" text-anchor="middle" font-size="8.5" fill="${AREA_COLORS['I']}" font-weight="${dominantCode === 'I' ? '700' : '600'}">${'I' + (dominantCode === 'I' ? ' ★' : '')}</text>
+        <text x="56"  y="172" text-anchor="end"    font-size="8.5" fill="${AREA_COLORS['D']}" font-weight="${dominantCode === 'D' ? '700' : '600'}">${'D' + (dominantCode === 'D' ? ' ★' : '')}</text>
+        <text x="80"  y="74"  text-anchor="end"    font-size="8.5" fill="${AREA_COLORS['E']}" font-weight="${dominantCode === 'E' ? '700' : '600'}">${'E' + (dominantCode === 'E' ? ' ★' : '')}</text>
         <text x="177" y="103" font-size="6.5" fill="#A0AEC0">5</text>
         <text x="177" y="73"  font-size="6.5" fill="#A0AEC0">10</text>
         <text x="177" y="34"  font-size="6.5" fill="#A0AEC0">14</text>
@@ -819,9 +819,9 @@ async function buildGroupReportContext(schoolId, gradeId, gradeName, schoolName)
     const areaStyles = {};
     codes.forEach(c => {
         const isDominant = c === dominantCode;
-        areaStyles[`color${c}`]  = isDominant ? (AREA_COLORS[c] || '#1A3A5C') : '#4A5568';
+        areaStyles[`color${c}`] = isDominant ? (AREA_COLORS[c] || '#1A3A5C') : '#4A5568';
         areaStyles[`weight${c}`] = isDominant ? '700' : '600';
-        areaStyles[`label${c}`]  = c + (isDominant ? ' ★' : '');
+        areaStyles[`label${c}`] = c + (isDominant ? ' ★' : '');
     });
 
     // ── 8. Textos interpretativos ────────────────────────────────────────────
@@ -865,10 +865,10 @@ async function buildGroupReportContext(schoolId, gradeId, gradeName, schoolName)
         // Identidad del informe
         pruebaConfig: { tipo_informe: 'Grupal_chaside_vocacional' },
         institutionName: schoolName || 'Institución',
-        gradeName:       gradeName  || 'Grado',
-        generatedDate:   new Date().toLocaleDateString('es-CO'),
-        instrumentName:  'Test CHASIDE – 98 ítems',
-        year:            new Date().getFullYear(),
+        gradeName: gradeName || 'Grado',
+        generatedDate: new Date().toLocaleDateString('es-CO'),
+        instrumentName: 'Test CHASIDE – 98 ítems',
+        year: new Date().getFullYear(),
 
         // KPIs
         population,
@@ -926,7 +926,7 @@ async function buildGroupReportContext(schoolId, gradeId, gradeName, schoolName)
 
         // Datos internos (útiles para debug y para la función de volver)
         _schoolId: schoolId,
-        _gradeId:  gradeId,
+        _gradeId: gradeId,
         _interestLevels: interestLevels,
         _studentsByArea: studentsByArea
     };
@@ -961,7 +961,7 @@ async function debugGroupReport(schoolId, gradeId, gradeName, schoolName) {
     console.group('PASO 1 — Intentando RPC obtener_resultados_grupo_seguro...');
     const { data: rpcRes, error: rpcErr } = await _s.rpc('obtener_resultados_grupo_seguro', {
         p_colegio_id: parseInt(schoolId),
-        p_grado_id:   parseInt(gradeId),
+        p_grado_id: parseInt(gradeId),
         p_usuario_id: String(sess.id)
     });
     console.log('rpcErr:', rpcErr);
@@ -973,7 +973,7 @@ async function debugGroupReport(schoolId, gradeId, gradeName, schoolName) {
     console.group('PASO 2 — Fallback: llamando obtener_informe_estrategico_grupal...');
     const { data: fallbackRes, error: fallbackErr } = await _s.rpc('obtener_informe_estrategico_grupal', {
         p_colegio_id: parseInt(schoolId),
-        p_grado_id:   parseInt(gradeId),
+        p_grado_id: parseInt(gradeId),
         p_usuario_id: sess.id
     });
     console.log('fallbackErr:', fallbackErr);
@@ -987,7 +987,7 @@ async function debugGroupReport(schoolId, gradeId, gradeName, schoolName) {
         return null;
     }
     const fbStudents = fallbackRes?.students || [];
-    const fbResults  = fallbackRes?.results  || [];
+    const fbResults = fallbackRes?.results || [];
     if (!fbStudents.length) {
         console.error('❌ FALLA AQUÍ: students vacío — colegio=' + schoolId + ' grado=' + gradeId);
         console.groupEnd(); console.groupEnd();
