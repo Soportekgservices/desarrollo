@@ -1079,22 +1079,20 @@ async function consultarResultado() {
     }
     const stData = rpcEst?.data?.data || rpcEst?.data || rpcEst || {};
 
-    // 3. Obtener visibilidad desde la SOLICITUD (Intentar RPC si falla el select)
-    const { data: solData, error: solError } = await _s.from('tsolicitudes_aplicacion')
-        .select('resultados_habilitados, resultados_fecha_inicio, resultados_fecha_fin')
-        .eq('id_grupo', stData.id_grupo)
-        .eq('id_prueba', resInfo.id_prueba)
-        .eq('estado', 'aprobada')
-        .maybeSingle();
+    // 3. Obtener visibilidad via RPC segura (evita bloqueo RLS para estudiantes)
+    const { data: rpcSol, error: solError } = await _s.rpc('obtener_permisos_resultados_estudiante', {
+        p_estudiante_id: sess.id,
+        p_prueba_id: resInfo.id_prueba
+    });
 
-    if (solError) {
-        console.error("Error al consultar permisos de resultados:", solError);
+    if (solError || rpcSol?.status === 'error') {
+        console.error("Error al consultar permisos de resultados:", solError || rpcSol?.message);
         return alert("Error al verificar permisos. Intenta de nuevo en unos minutos.");
     }
 
     const canBypass = (sess.rol === 'admin' || sess.rol === 'distribuidor');
-    const sol = solData;
-    const today = new Date().toISOString().split('T')[0];
+    const sol = rpcSol?.data || null;
+    const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD en hora local del navegador
 
     // 4. Lógica de Validación de Fechas y Habilitación
     let permitido = false;
@@ -1116,7 +1114,22 @@ async function consultarResultado() {
     const areas = Object.keys(resultados);
     const puntuaciones = areas.map(area => resultados[area]);
 
-    const { data: st } = await _s.from('testudiantes').select('*, tcolegios(nombre, ciudad, tdepartamentos(nombre)), tgrados(nombre), tgrupos(nombre), tusuario(identificacion)').eq('id', sess.id).single();
+    const { data: stRpc, error: errSt } = await _s.rpc('obtener_datos_estudiante_seguro', {
+        p_estudiante_id: sess.id,
+        p_solicitante_id: sess.id
+    });
+    const stRaw = stRpc?.data?.data || stRpc?.data || stRpc || {};
+    const st = {
+        ...stRaw,
+        nombre:         stRaw.nombre          || 'Estudiante',
+        identificacion: stRaw.identificacion  || 'N/A',
+        tgrados:  { nombre: stRaw.grado_nombre        || 'N/A' },
+        tgrupos:  { nombre: stRaw.grupo_nombre         || 'N/A' },
+        tcolegios: {
+            nombre: stRaw.colegio_nombre      || 'No especificado',
+            tdepartamentos: { nombre: stRaw.departamento_nombre || 'No especificado' }
+        }
+    };
 
     // Asegurar que el encabezado y soporte sean visibles al consultar resultados
     const tools = document.getElementById('studentHelpTools');
@@ -1138,7 +1151,7 @@ async function consultarResultado() {
     const datosParaInforme = {
         st,
         data,
-        pruebaConfig: data.tpruebas,
+        pruebaConfig: { tipo_informe: data.tipo_informe, tipo_respuesta: data.tipo_respuesta, logica_calculo: data.logica_calculo, nombre: data.prueba_nombre },
         resultados,
         areas,
         puntuaciones,

@@ -236,9 +236,6 @@ async function viewUserManagement() {
                         <button class="btn-main" style="width:auto; padding:12px 20px;" onclick="loadUserManagementTable()">
                             <i class="fa-solid fa-magnifying-glass"></i>
                         </button>
-                        <button id="btnBulkDelete" class="btn-main" style="width:auto; padding:12px 20px; background:var(--danger); display:none;" onclick="bulkDeleteFilteredUsers()">
-                            <i class="fa-solid fa-trash-can"></i> Vaciar Filtro
-                        </button>
                     </div>
                 </div>
                 <div id="userStatsHeader" style="font-size:0.85rem; color:var(--secondary); font-weight:600;"></div>
@@ -405,29 +402,6 @@ async function saveUserEdit(userId, rol) {
         fn();
     } else {
         viewUserManagement();
-    }
-}
-
-async function bulkDeleteFilteredUsers() {
-    const schoolTerm = document.getElementById('searchUserSchool').value.trim();
-    const role = document.getElementById('filterUserRole').value;
-    
-    if(!confirm(`⚠️ ATENCIÓN: Estás por eliminar permanentemente todos los usuarios que coinciden con el filtro actual (Institución: ${schoolTerm || 'Cualquiera'}).\n\n¿Deseas continuar?`)) return;
-
-    const container = document.getElementById('userManagementContainer');
-    const rows = container.querySelectorAll('button[onclick^="deleteSystemUser"]');
-    const ids = Array.from(rows).map(btn => btn.getAttribute('onclick').split("'")[1]);
-
-    // REFUERZO SEGURIDAD: Borrado masivo via RPC
-    const { data: res, error } = await _s.rpc('borrar_usuarios_masivo_seguro', {
-        p_ids: ids,
-        p_admin_id: sess.id
-    });
-    
-    if(error) alert("Error en el borrado masivo: " + error.message);
-    else {
-        alert("Limpieza completada.");
-        loadUserManagementTable();
     }
 }
 
@@ -1235,6 +1209,14 @@ async function viewSolicitudesAplicacion() {
                         
                     const fi = s.fecha_inicio || '';
                     const ff = s.fecha_fin || '';
+                    const hi = s.hora_inicio ? s.hora_inicio.substring(0, 5) : '';
+                    const hf = s.hora_fin ? s.hora_fin.substring(0, 5) : '';
+                    
+                    let ventana = `${fi} → ${ff}`;
+                    if (hi && hf) {
+                        ventana += `<br><span style="color:var(--secondary); font-size:0.75rem;"><i class="fa-regular fa-clock"></i> ${hi} a ${hf}</span>`;
+                    }
+
                     return ` 
                     <tr>
                         <td style="font-size:0.8rem;">${s.created_at ? new Date(s.created_at).toLocaleString() : '—'}</td>
@@ -1242,7 +1224,7 @@ async function viewSolicitudesAplicacion() {
                         <td style="font-size:0.85rem;">${s.distribuidor_nombre || '—'}</td>
                         <td>${s.prueba_nombre || '#' + s.id_prueba}</td>
                         <td>${s.grado_nombre || '—'} / ${s.grupo_nombre || '—'}</td>
-                        <td style="font-size:0.8rem;">${fi} → ${ff}</td>
+                        <td style="font-size:0.8rem;">${ventana}</td>
                         <td><span class="badge ${badge}">${s.estado}</span></td>
                         <td style="display:flex; flex-wrap:wrap; gap:6px;">
                             ${pend ? `
@@ -1267,12 +1249,24 @@ async function resolverSolicitudAplicacion(id, aprobar) {
         motivo = prompt('Motivo del rechazo (opcional):');
         if (motivo === null) return;
     }
-    // REFUERZO SEGURIDAD: Decisión via RPC
+
+    // Rescatamos los detalles completos usando la función segura (ya que la tabla no trae la hora)
+    const { data: rpcRes } = await _s.rpc('obtener_detalle_solicitud_seguro', {
+        p_solicitud_id: id,
+        p_usuario_id: sess.id
+    });
+    const s_det = rpcRes?.data || {};
+
+    // REFUERZO SEGURIDAD: Decisión via RPC enviando los 8 parámetros para evitar ambigüedad
     const { data: s, error } = await _s.rpc('gestionar_solicitud_aplicacion_segura', {
         p_solicitud_id: String(id), // Convertir a String para bigint
         p_estado: aprobar ? 'aprobada' : 'rechazada',
         p_motivo_rechazo: motivo || null, // Asegurar null si vacío
-        p_admin_id: String(sess.id) // Convertir a String para uuid
+        p_admin_id: String(sess.id), // Convertir a String para uuid
+        p_fecha_inicio: s_det.fecha_inicio || null,
+        p_fecha_fin: s_det.fecha_fin || null,
+        p_hora_inicio: s_det.hora_inicio || null,
+        p_hora_fin: s_det.hora_fin || null
     });
     if (error) alert('Error: ' + error.message);
     else { alert(aprobar ? 'Solicitud aprobada.' : 'Solicitud rechazada.'); viewSolicitudesAplicacion(); }
@@ -1571,7 +1565,6 @@ async function viewSchoolStructure(schoolId, schoolName) {
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h3>1. Selecciona el Grado</h3>
                 <div style="display:flex; gap:10px;">
-                    <!-- <button class="btn-main" style="width:auto; padding:5px 15px;" onclick="addGrade(${schoolId})">+ Nuevo</button> -->
                     <button class="btn-main" style="width:auto; padding:5px 15px; background:var(--accent);" onclick='viewLoadStudents(${schoolId}, ${JSON.stringify(schoolName)})'>
                         <i class="fa-solid fa-file-excel"></i> Carga Masiva
                     </button>
@@ -1585,7 +1578,6 @@ async function viewSchoolStructure(schoolId, schoolName) {
         <div class="card span-6" id="groupCard" style="display:none;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h3>2. Selecciona el Grupo</h3>
-                <!-- <button class="btn-main" style="width:auto; padding:5px 15px; background:var(--success);" onclick="addGroup(${schoolId})">+ Añadir Grupo</button> -->
             </div>
             <div id="groupsPicker" class="horizontal-picker"></div>
         </div>
@@ -1896,22 +1888,6 @@ async function darProrrogaEstudiante(sid, name) {
     
     if (error) alert("Error al dar prórroga: " + error.message);
     else alert(`✅ Prórroga activada para ${name} hasta el ${fechaLimite.toLocaleString()}`);
-}
-
-async function addGrade(schoolId) {
-    const nombre = prompt("Número del Grado (Ej: 1, 11):"); if (!nombre) return;
-    const { data: grado } = await _s.from('tgrados').select('id').eq('nombre', nombre).single();
-    if (!grado) return alert("Grado no válido.");
-    const grupoNom = prompt(`Habilitando Grado ${nombre}. Nombre del primer grupo:`, "A"); if (!grupoNom) return; // Originalmente en una línea
-    const { error } = await _s.rpc('crear_grupo', { p_nombre: grupoNom, p_grado_id: grado.id, p_colegio_id: schoolId }); // Originalmente en una línea
-    if (error) alert("Error: " + error.message); else { alert("Grado habilitado."); loadGrades(schoolId); } // Originalmente en una línea
-}
-
-async function addGroup(schoolId) {
-    if (!selectedGradeId) return alert("Selecciona un grado.");
-    const nombre = prompt("Nombre del nuevo grupo:"); if (!nombre) return;
-    const { error } = await _s.rpc('crear_grupo', { p_nombre: nombre, p_grado_id: selectedGradeId, p_colegio_id: schoolId }); // Originalmente en una línea
-    if (error) alert("Error: " + error.message); else loadGroups(selectedGradeId, schoolId); // Originalmente en una línea
 }
 
 async function viewLoadStudents(schoolId, schoolName) {
