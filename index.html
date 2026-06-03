@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="src/styles/main.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- reCAPTCHA habilitado para producción -->
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <!-- <script src="https://www.google.com/recaptcha/api.js" async defer></script> -->
 </head>
 
 <body>
@@ -70,8 +70,8 @@
                             <label><input type="checkbox"> Recordarme</label>
                             <a href="#">¿Olvidaste tu ID?</a>
                         </div>-->
-                        <button id="btnAuth" class="btn-login-action" onclick="authenticateUser()">INGRESAR AL
-                            SISTEMA</button>
+                        <button id="btnAuth" type="button" class="btn-login-action"
+                            onclick="authenticateUser()">INGRESAR AL SISTEMA</button>
                     </div>
                 </div>
             </div>
@@ -139,7 +139,7 @@
     <script src="src/js/utils.js"></script>
     <script src="src/js/auth.js"></script>
     <script src="src/js/dashboard.js"></script>
-    <script src="src/js/reports.js"></script><!-- Motor de informes reutilizable — debe cargarse ANTES de test.js -->
+    <script src="src/js/reports.js"></script><!-- Motor de informes reutilizable -->
     <script src="src/js/test.js"></script>
     <script src="src/js/facturacion.js"></script>
     <script>

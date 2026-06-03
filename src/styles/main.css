@@ -764,6 +764,7 @@ iframe {
        Sube para más espaciado tipo "CONTINUAR".
    ───────────────────────────────────────────────────────────────── */
 .btn-login-action {
+    margin-top: 12px;
     width: 100%;
     padding: 14px;
     border: none;
@@ -771,6 +772,16 @@ iframe {
     color: white;
     font-weight: bold;
     cursor: pointer;
+    display: inline-flex;
+    /* forces a full box in iOS */
+    align-items: center;
+    /* vertical centering */
+    justify-content: center;
+    /* horizontal centering */
+    line-height: 1;
+    /* removes internal blank space */
+    touch-action: manipulation;
+    /* indicates a touch control */
     font-size: 1rem;
     min-height: var(--touch-min);
     /* ← GRADIENTE BOTÓN PRINCIPAL: igual que btn-main del sistema interno
@@ -790,14 +801,14 @@ iframe {
     appearance: none;
 }
 
-.btn-login-action:hover {
+/* Touch-friendly active class replaces hover effect */
+
+.btn-login-action.active {
     background-position: right;
     transform: translateY(-2px);
     box-shadow:
         0 8px 34px rgba(5, 43, 145, 0.65),
-        /* ← SOMBRA HOVER (más intensa) */
         0 0 0 1px rgba(72, 138, 153, 0.55);
-    /* ← BORDE HOVER (más visible) */
 }
 
 /* =====================================================
