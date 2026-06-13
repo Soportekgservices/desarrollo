@@ -500,7 +500,8 @@ iframe {
     display: flex;
     gap: 20px;
     padding: 2px;
-    overflow: hidden;
+    overflow: visible;
+    isolation: isolate;
 }
 
 
@@ -564,6 +565,7 @@ iframe {
     width: 100%;
     max-width: 320px;
     text-align: left;
+    position: relative;
 }
 
 
@@ -2031,7 +2033,7 @@ iframe {
     /* Login card — stack vertically */
     .wrapper-login {
         align-items: flex-start;
-        padding-top: 24px;
+        padding-top: 4px;
     }
 
     .card-login {
@@ -2040,7 +2042,7 @@ iframe {
         height: auto;
         flex-direction: column;
         align-items: center;
-        padding: 28px 20px;
+        padding: 16x 20px;
         margin: 0 auto;
         gap: 16px;
     }
@@ -2307,7 +2309,7 @@ iframe {
 
     /* ── Login ── */
     .navbar-login {
-        padding: 12px 16px;
+        padding: 6x 16px;
     }
 
     .logo-login {
@@ -2319,7 +2321,7 @@ iframe {
     }
 
     .card-login {
-        padding: 20px 14px;
+        padding: 16px 14px;
         border-radius: 16px;
         gap: 12px;
     }
@@ -2486,6 +2488,23 @@ iframe {
 
     .login-box-container h2 {
         font-size: 1.3rem;
+    }
+
+    .login-box-container p {
+        margin-bottom: 12px;
+    }
+
+    .input-group-login {
+        margin-bottom: 8px;
+    }
+
+    .input-group-login select,
+    .input-group-login input {
+        padding: 11px 14px;
+    }
+
+    #captcha-container {
+        margin-bottom: 60px !important;
     }
 
     /* ── Sidebar wider touch area ── */

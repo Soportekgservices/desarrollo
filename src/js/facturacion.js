@@ -149,7 +149,7 @@ async function viewGestionPrecios() {
         <div class="card span-6">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3>Configuración de Precios</h3>
-                <button class="btn-main" onclick="mostrarFormularioPrecio()" style="width: auto;">+ Nuevo Precio</button>
+                ${/* Botón deshabilitado temporalmente: <button class="btn-main" onclick="mostrarFormularioPrecio()" style="width: auto;">+ Nuevo Precio</button> */''}
             </div>
             <div id="preciosTableContainer">Cargando...</div>
         </div>
@@ -214,9 +214,7 @@ async function cargarTablaPreciosAdmin() {
                                 <button class="btn-main" style="padding: 6px 12px; background: var(--secondary);" onclick="editarPrecio(${p.id})">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
-                                <button class="btn-main" style="padding: 6px 12px; background: var(--danger);" onclick="cambiarEstatusoPrecio(${p.id}, '${p.estado}')">
-                                    <i class="fa-solid fa-${p.estado === 'Activo' ? 'ban' : 'check'}"></i>
-                                </button>
+                                ${/* Botón deshabilitado temporalmente: <button class="btn-main" style="padding: 6px 12px; background: var(--danger);" onclick="cambiarEstatusoPrecio(${p.id}, '${p.estado}')"><i class="fa-solid fa-${p.estado === 'Activo' ? 'ban' : 'check'}"></i></button> */''}
                             </td>
                         </tr>
                     `;
@@ -232,8 +230,8 @@ async function mostrarFormularioPrecio(precioId = null) {
     let precioData = null;
     
     if (precioId) {
-        const { data } = await _s.from('tprecios').select('*').eq('id', precioId).single();
-        precioData = data;
+        const { data: _res } = await _s.rpc('obtener_precio_detalle_seguro', { p_precio_id: precioId, p_usuario_id: sess.id });
+        precioData = _res?.data || null;
     }
 
     const isEdit = precioId !== null;
@@ -349,11 +347,11 @@ async function guardarPrecio(precioId) {
     };
 
     let result;
-    if (precioId !== 'null' && precioId !== null) {
-        result = await _s.from('tprecios').update(datos).eq('id', precioId);
-    } else {
-        result = await _s.from('tprecios').insert(datos);
-    }
+    result = await _s.rpc('gestionar_precio_sistema', {
+        p_precio_id: (precioId !== 'null' && precioId !== null) ? precioId : null,
+        p_datos: datos,
+        p_usuario_id: sess.id
+    });
 
     if (result.error) {
         alert('Error: ' + result.error.message);

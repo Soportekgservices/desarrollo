@@ -48,7 +48,7 @@ function viewAdmin() {
             <p style="color: #64708c; font-size: 0.9rem; margin:0;">Accede a los informes individuales y grupales de todos los colegios.</p>
         </div>
         
-        <div class="card span-6">
+        <div class="card" style="grid-column: span 6;">
             <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; margin-bottom:20px;">
                 <h3 style="min-width:0;">Listado de Distribuidores</h3>
                 <button class="btn-main" style="width:auto; padding: 10px 25px; flex-shrink:0;" onclick="renderDistributorForm()">+ Nuevo Distribuidor</button>
@@ -201,8 +201,14 @@ async function deleteDistributor(id) {
         p_solicitante_id: sess.id
     });
 
-    if(rpcError || res.status === 'error') alert("Error: " + (rpcError?.message || res?.message));
-    else { alert("✅ Registro eliminado."); viewAdmin(); }
+    if(rpcError || res.status === 'error') {
+        const _msg = rpcError?.message || res?.message || '';
+        if (_msg.includes('tcolegios_id_dist_fkey')) {
+            alert("No es posible eliminar este distribuidor porque tiene colegios y/o facturas asignadas.");
+        } else {
+            alert("Error: " + _msg);
+        }
+    } else { alert("✅ Registro eliminado."); viewAdmin(); }
 }
 
 async function viewUserManagement() {
@@ -1295,7 +1301,7 @@ async function renderEditSolicitudForm(id) {
                 Utiliza esta sección para corregir errores operativos o ajustar ventanas de tiempo sin repetir el flujo de solicitud.
             </p>
             
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px; background:#f8fafc; padding:25px; border-radius:15px; border:1px solid #e2e8f0;">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr)); gap:20px; background:#f8fafc; padding:25px; border-radius:15px; border:1px solid #e2e8f0;">
                 <div class="input-box" style="margin:0;">
                     <label>Estado Administrativo</label>
                     <select id="admEditEstado">
@@ -1327,7 +1333,7 @@ async function renderEditSolicitudForm(id) {
                     <input type="time" id="admEditHfin" value="${s.hora_fin ? s.hora_fin.substring(0,5) : ''}">
                 </div>
 
-                <div class="input-box" style="grid-column: span 2; margin:0;">
+                <div class="input-box" style="grid-column: 1 / -1; margin:0;">
                     <label>Notas de la Operación / Motivo de Rechazo</label>
                     <textarea id="admEditNotas" style="height:80px; resize:none;">${s.motivo_rechazo || ''}</textarea>
                 </div>

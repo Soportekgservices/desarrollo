@@ -27,7 +27,7 @@ async function authenticateUser() {
     await new Promise(resolve => {
         // 1️⃣ Script ya cargado y ready disponible
         if (window.grecaptcha && typeof grecaptcha.ready === 'function') {
-            grecaptcha.ready(() => resolve());
+            resolve();
             return;
         }
         // 2️⃣ Script cargado pero sin ready (carga síncrona)
