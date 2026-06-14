@@ -43,12 +43,12 @@ const RESULT_DOMINANCE_THRESHOLD = 10;
 async function fetchAreaInfos(codes) {
     if (!codes || !codes.length) return [];
     const uniqueCodes = [...new Set(codes.filter(Boolean))];
-    const { data, error } = await _s.from('tareas_vocacionales').select('*').in('codigo_area', uniqueCodes);
+    const { data: res, error } = await _s.rpc('obtener_areas_vocacionales_por_codigos', { p_codigos: uniqueCodes });
     if (error) {
         console.error('Error loading tareas_vocacionales:', error);
         return [];
     }
-    return data || [];
+    return res?.data || [];
 }
 
 async function buildAreaInfo(areaCodes) {
