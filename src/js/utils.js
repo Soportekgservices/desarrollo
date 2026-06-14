@@ -55,6 +55,15 @@ const AREAS_VOCACIONALES = {
         fortalezas: "Precisión y diseño de sistemas.",
         a_desarrollar: "Habilidades de comunicación interpersonal.",
         sector_laboral: "Industria tecnológica, construcción y software."
+    },
+    "Exactas y Agrarias": {
+        descripcion: "Te apasionan las ciencias exactas, la naturaleza y los procesos agropecuarios. Disfrutas del razonamiento matemático, la investigación científica aplicada y el trabajo con recursos naturales. Tu vocación se orienta hacia la producción, la sostenibilidad y la innovación científica.",
+        carreras: ["Matemáticas", "Física", "Estadística", "Agronomía", "Zootecnia", "Ingeniería Agronómica", "Biología Marina"],
+        intereses: "Ciencias exactas y procesos naturales.",
+        habilidades: "Razonamiento lógico-matemático e investigación.",
+        fortalezas: "Precisión, análisis y método científico.",
+        a_desarrollar: "Habilidades de comunicación y trabajo en equipo.",
+        sector_laboral: "Sector agropecuario, investigación científica y educación."
     }
 };
 
