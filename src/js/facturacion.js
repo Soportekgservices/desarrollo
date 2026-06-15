@@ -1534,23 +1534,36 @@ async function cargarReportesFacturacion() {
 
     // Agrupar por distribuidor
     const reportes = {};
-    data?.forEach(f => {
-        // El RPC retorna el nombre del distribuidor directamente como 'distribuidor_nombre'
+    for (const f of (data || [])) {
         const distNombre = f.distribuidor_nombre || 'Desconocido';
-        const distId = distNombre; // Usamos el nombre como clave de agrupación
-        
-        if (!reportes[distId]) {
-            reportes[distId] = {
-                nombre: distNombre,
-                totalFacturado: 0,
-                totalPagado: 0,
-                facturas: 0
-            };
+
+        if (!reportes[distNombre]) {
+            reportes[distNombre] = { nombre: distNombre, totalFacturado: 0, totalPagado: 0, facturas: 0 };
         }
-        reportes[distId].totalFacturado += parseFloat(f.total || 0);
-        reportes[distId].totalPagado += parseFloat(f.total_abonado || 0);
-        reportes[distId].facturas += 1;
-    });
+
+        // Obtener detalle real de la factura (precios)
+        const { data: resDet } = await _s.rpc('obtener_detalle_factura_seguro', {
+            p_factura_id: String(f.id),
+            p_usuario_id: sess.id
+        });
+        const fDet = resDet?.data?.data || resDet?.data || {};
+        const pBase = parseFloat(fDet.precio_base_at_emission || 0);
+        const pUnit = parseFloat(fDet.precio_unitario_calculado || 0);
+
+        // Obtener completados reales
+        let realCant = 0;
+        if (f.id_solicitud_origen) {
+            const { data: resReal } = await _s.rpc('obtener_estudiantes_completados_solicitud_seguro', {
+                p_solicitud_id: parseInt(f.id_solicitud_origen),
+                p_usuario_id: sess.id
+            });
+            realCant = resReal?.data?.length || resReal?.data?.data?.length || 0;
+        }
+
+        reportes[distNombre].totalFacturado += pBase + (realCant * pUnit);
+        reportes[distNombre].totalPagado += parseFloat(f.total_abonado || 0);
+        reportes[distNombre].facturas += 1;
+    }
 
     let html = `
         <table class="data-table">
@@ -1736,11 +1749,29 @@ async function cargarEstadisticasFacturacion() {
     let totalIngresos = 0;
     let totalPagos = 0;
 
-    facturas.forEach(f => {
-        const monto = parseFloat(f.total || 0);
-        totalIngresos += monto;
+    for (const f of facturas) {
+        // Obtener detalle de la factura para precios reales (igual que el consolidado)
+        const { data: resDet } = await _s.rpc('obtener_detalle_factura_seguro', {
+            p_factura_id: String(f.id),
+            p_usuario_id: sess.id
+        });
+        const fDet = resDet?.data?.data || resDet?.data || {};
+        const pBase = parseFloat(fDet.precio_base_at_emission || 0);
+        const pUnit = parseFloat(fDet.precio_unitario_calculado || 0);
+
+        // Obtener completados reales desde tcompletados_pruebas
+        let realCant = 0;
+        if (f.id_solicitud_origen) {
+            const { data: resReal } = await _s.rpc('obtener_estudiantes_completados_solicitud_seguro', {
+                p_solicitud_id: parseInt(f.id_solicitud_origen),
+                p_usuario_id: sess.id
+            });
+            realCant = resReal?.data?.length || resReal?.data?.data?.length || 0;
+        }
+
+        totalIngresos += pBase + (realCant * pUnit);
         totalPagos += parseFloat(f.total_abonado || 0);
-    });
+    }
 
     const elFacturas = document.getElementById('statFacturasEmitidas');
     const elIngresos = document.getElementById('statIngresos');
