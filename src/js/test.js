@@ -494,6 +494,10 @@ async function viewInformesIndividuales(schoolId = null, schoolName = null) {
     const completedSet = new Set(rpcComp?.data?.data || rpcComp?.data || []);
 
     const studentsByGrade = new Map(); (estudiantes || []).forEach(est => { if (!studentsByGrade.has(est.id_grado)) { studentsByGrade.set(est.id_grado, []); } studentsByGrade.get(est.id_grado).push(est); });
+
+    // Guardar en window para acceso desde filtrarEstudiantesPorGrupo sin nueva consulta a BD
+    window._infIndividualData = { studentsByGrade, completedSet };
+
     let content = `<div class="card span-6">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <h3>Estudiantes con prueba asignada</h3>
@@ -508,15 +512,37 @@ async function viewInformesIndividuales(schoolId = null, schoolName = null) {
         const completed = filteredStudents.filter(s => completedSet.has(s.id)).length;
         const pending = total - completed;
 
-        const groupDetails = Array.from(gradeEntry.grupos.entries()).map(([groupId, groupName]) => {
-            const groupStudents = gradeStudents.filter(s => s.id_grupo === groupId);
-            if (!groupStudents.length) return '';
-            return `<div style="margin-bottom: 20px;"><h5 style="margin-bottom: 10px; color: var(--primary);">Grupo ${groupName}</h5>${groupStudents.map(st => `<div style="padding: 12px; margin-bottom: 8px; border: 1px solid #e0e0e0; border-radius: 8px; display:flex; justify-content:space-between; align-items:center; background:#fff; ${completedSet.has(st.id) ? 'cursor:pointer;' : ''}" ${completedSet.has(st.id) ? `onclick="viewInformeEstudiante('${st.id}')"` : ''}><div><strong>${st.nombre || 'Sin nombre'}</strong><br><small style="color: var(--secondary);">${st.grado_nombre || st.tgrados?.nombre || 'Sin grado'} - ${st.grupo_nombre || st.tgrupos?.nombre || 'Sin grupo'}</small></div><span style="padding: 4px 10px; border-radius: 999px; font-size:0.8rem; ${completedSet.has(st.id) ? 'background: var(--success); color: white;' : 'background: var(--danger); color: white;'}">${completedSet.has(st.id) ? 'Completado' : 'Pendiente'}</span></div>`).join('')}</div>`;
-        }).join('');
+        const groupOptions = Array.from(gradeEntry.grupos.entries())
+            .map(([gid, gname]) => `<option value="${gid}">${gname}</option>`)
+            .join('');
 
-        content += `<details style="margin-bottom:18px; border:1px solid #d1d5db; border-radius:10px; overflow:hidden; background:#fff;"><summary style="padding:18px 20px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-weight:600; background:#f9fafb;"><span>${gradeEntry.nombre} - ${total} asignados / ${completed} completados / ${pending} pendientes</span><span style="font-size:0.9rem; color:var(--secondary);">Ver</span></summary><div style="padding:20px; border-top:1px solid #e5e7eb;">${groupDetails || '<p style="color: var(--secondary);">No hay estudiantes asignados en este grado.</p>'}</div></details>`;
+        content += `<details style="margin-bottom:18px; border:1px solid #d1d5db; border-radius:10px; overflow:hidden; background:#fff;"><summary style="padding:18px 20px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-weight:600; background:#f9fafb;"><span>${gradeEntry.nombre} - ${total} asignados / ${completed} completados / ${pending} pendientes</span><span style="font-size:0.9rem; color:var(--secondary);">Ver</span></summary><div style="padding:20px; border-top:1px solid #e5e7eb;"><select onchange="filtrarEstudiantesPorGrupo(this.value, ${gradeId})" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; margin-bottom:15px; font-size:0.95rem;"><option value="">-- Seleccionar Grupo --</option>${groupOptions}</select><div id="students-grade-${gradeId}"></div></div></details>`;
     }
     document.getElementById('dynamicBoard').innerHTML = content + `</div></div>`;
+}
+
+function filtrarEstudiantesPorGrupo(groupId, gradeId) {
+    const container = document.getElementById('students-grade-' + gradeId);
+    if (!container) return;
+    if (!groupId) { container.innerHTML = ''; return; }
+
+    const d = window._infIndividualData || {};
+    const studentsByGrade = d.studentsByGrade;
+    const completedSet = d.completedSet;
+    if (!studentsByGrade) return;
+
+    const gradeStudents = studentsByGrade.get(parseInt(gradeId)) || [];
+    const groupStudents = gradeStudents.filter(function(s) { return s.id_grupo === parseInt(groupId); });
+
+    if (!groupStudents.length) {
+        container.innerHTML = '<p style="color:var(--secondary);">No hay estudiantes en este grupo.</p>';
+        return;
+    }
+
+    container.innerHTML = groupStudents.map(function(st) {
+        var done = completedSet.has(st.id);
+        return '<div style="padding:12px; margin-bottom:8px; border:1px solid #e0e0e0; border-radius:8px; display:flex; justify-content:space-between; align-items:center; background:#fff;' + (done ? ' cursor:pointer;' : '') + '"' + (done ? ' onclick="viewInformeEstudiante(\'' + st.id + '\')"' : '') + '><div><strong>' + (st.nombre || 'Sin nombre') + '</strong><br><small style="color:var(--secondary);">' + (st.grado_nombre || 'Sin grado') + ' - ' + (st.grupo_nombre || 'Sin grupo') + '</small></div><span style="padding:4px 10px; border-radius:999px; font-size:0.8rem;' + (done ? ' background:var(--success); color:white;' : ' background:var(--danger); color:white;') + '">' + (done ? 'Completado' : 'Pendiente') + '</span></div>';
+    }).join('');
 }
 
 async function viewInformeEstudiante(eid) {
@@ -1163,6 +1189,3 @@ async function consultarResultado() {
 
     await renderInforme(datosParaInforme, () => viewStudent());
 }
-
-// escapeHtml movida a reports.js
-// renderTemplate movida a reports.js
