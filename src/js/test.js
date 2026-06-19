@@ -202,6 +202,18 @@ async function renderInforme(d, funcionVolver) {
 
         board.innerHTML = renderTemplate(template, context);
 
+        // Personalizar nombre del archivo PDF con el nombre del estudiante
+        const printBtn = board.querySelector('[onclick="window.print()"]');
+        if (printBtn) {
+            const nombreEstudiante = (context.studentName || 'Informe').replace(/\s+/g, '_');
+            printBtn.onclick = function() {
+                const titleOriginal = document.title;
+                document.title = nombreEstudiante;
+                window.print();
+                document.title = titleOriginal;
+            };
+        }
+
         // Vincular botón de volver si existe en la plantilla
         const backBtn = document.getElementById('reportBackButton');
         if (backBtn) {
