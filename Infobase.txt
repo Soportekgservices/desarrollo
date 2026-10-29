@@ -1,3 +1,5 @@
+Informacion base 
+
 type,entity,detail,info,extra
 COLUMN,captcha_config,id,uuid NO,gen_random_uuid()
 COLUMN,captcha_config,secret_key,text NO,null
